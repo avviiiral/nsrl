@@ -1,0 +1,436 @@
+/* Archivo Variable (weight + width axes), self-hosted and preloaded from index.html.
+   SIL Open Font License. Source: @fontsource-variable/archivo. */
+@font-face {
+  font-family: 'Archivo Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url('/fonts/archivo-latin.woff2') format('woff2-variations');
+}
+
+/* ---------------------------------------------------------------------------
+   NSRL design tokens.
+   The palette comes from the road itself: asphalt, concrete, the yellow of a
+   national-highway kilometre stone and the green of a highway signboard.
+   When the original logo file is supplied, tune --signal / --sign to sit with
+   it here; nothing else in the codebase hard-codes a colour.
+--------------------------------------------------------------------------- */
+:root {
+  --asphalt: #1b2023;
+  --asphalt-2: #262c30;
+  --concrete: #e8eae5;
+  --concrete-2: #d6d9d2;
+  --paper: #ffffff;
+  --ink: #15191b;
+  --muted: #555d62;
+  --muted-on-dark: #aab2b6;
+  --signal: #f6b900; /* kilometre-stone yellow: fills and markings only, never text on white */
+  --sign: #0c5a43; /* signboard green: links, focus, served-city stones */
+  --sign-bright: #7fd1b3;
+  --danger: #b3261e;
+
+  --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --step--1: clamp(0.84rem, 0.81rem + 0.12vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+  --step-3: clamp(1.9rem, 1.45rem + 2.2vw, 3.5rem);
+  --step-4: clamp(2.3rem, 1.5rem + 4vw, 5.25rem);
+
+  --gutter: clamp(1.125rem, 0.6rem + 2.6vw, 3rem);
+  --section: clamp(3.5rem, 2.2rem + 6vw, 8rem);
+  --max: 82rem;
+  --header-h: 4.25rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+iframe {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--sign);
+  outline-offset: 3px;
+}
+
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--signal);
+}
+
+/* --- Type ----------------------------------------------------------------- */
+/* Headlines run condensed and heavy, the way lettering is set on highway signage. */
+.display,
+h1,
+h2,
+h3,
+.h1,
+.h2,
+.h3 {
+  font-stretch: 78%;
+  font-weight: 750;
+  line-height: 1.02;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+h1,
+.h1 {
+  font-size: var(--step-4);
+}
+h2,
+.h2 {
+  font-size: var(--step-3);
+}
+h3,
+.h3 {
+  font-size: var(--step-2);
+  line-height: 1.1;
+}
+
+.lead {
+  font-size: var(--step-1);
+  line-height: 1.45;
+  max-width: 38ch;
+}
+
+.prose p {
+  max-width: 62ch;
+}
+.prose p + p {
+  margin-top: 1em;
+}
+
+.small {
+  font-size: var(--step--1);
+}
+.muted {
+  color: var(--muted);
+}
+
+.text-link {
+  color: var(--sign);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 0.2s;
+  &:hover {
+    text-decoration-color: var(--signal);
+  }
+}
+.on-dark .text-link {
+  color: var(--paper);
+  text-decoration-color: var(--signal);
+}
+
+/* Component hosts are block-level so spacing utilities apply to them. */
+app-header,
+app-footer,
+app-history,
+app-network-section,
+app-client-logo-section,
+app-enquiry-form,
+app-contact-information,
+app-cta-section,
+app-service-section {
+  display: block;
+}
+
+/* --- Layout --------------------------------------------------------------- */
+.wrap {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: var(--section);
+}
+.section--tight {
+  padding-block: calc(var(--section) * 0.6);
+}
+.section--concrete {
+  background: var(--concrete);
+}
+.section--asphalt {
+  background: var(--asphalt);
+  color: var(--paper);
+}
+
+/* 12-column grid used for the asymmetric editorial splits. */
+.grid {
+  display: grid;
+  gap: clamp(1.5rem, 1rem + 2.5vw, 4rem) var(--gutter);
+}
+@media (min-width: 60rem) {
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .col-4 {
+    grid-column-end: span 4;
+  }
+  .col-5 {
+    grid-column-end: span 5;
+  }
+  .col-6 {
+    grid-column-end: span 6;
+  }
+  .col-7 {
+    grid-column-end: span 7;
+  }
+  .col-8 {
+    grid-column-end: span 8;
+  }
+  .start-6 {
+    grid-column-start: 6;
+  }
+  .start-7 {
+    grid-column-start: 7;
+  }
+}
+
+.stack > * + * {
+  margin-top: var(--stack, 1.25rem);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+.btn {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--paper);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 3rem;
+  padding: 0.7rem 1.4rem;
+  border: 2px solid var(--btn-bg);
+  border-radius: 3px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 650;
+  font-size: var(--step-0);
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+
+  /* The fill slides in from the left like a barrier arm coming down. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--btn-hover, var(--sign));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s var(--ease);
+  }
+  &:hover::before,
+  &:focus-visible::before {
+    transform: scaleX(1);
+  }
+  &:hover,
+  &:focus-visible {
+    border-color: var(--btn-hover, var(--sign));
+    color: var(--btn-hover-fg, var(--paper));
+  }
+  &[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.btn--signal {
+  --btn-bg: var(--signal);
+  --btn-fg: var(--ink);
+  --btn-hover: var(--paper);
+  --btn-hover-fg: var(--ink);
+}
+
+.btn--ghost {
+  --btn-fg: var(--ink);
+  background: transparent;
+  border-color: currentColor;
+  --btn-hover: var(--ink);
+}
+.on-dark .btn--ghost {
+  --btn-fg: var(--paper);
+  --btn-hover: var(--paper);
+  --btn-hover-fg: var(--ink);
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+@media (max-width: 26rem) {
+  .btn-row > .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* --- Kilometre stone ------------------------------------------------------ */
+/* National-highway stones carry a yellow cap, state-highway stones a green one.
+   Here yellow marks an NSRL office and green a city served. */
+.stone {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 6.5rem;
+  border-radius: 1.4rem 1.4rem 2px 2px;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  text-align: center;
+  line-height: 1.15;
+}
+.stone__cap {
+  padding: 0.7rem 0.9rem 0.45rem;
+  background: var(--signal);
+  font-stretch: 78%;
+  font-weight: 750;
+  font-size: 1.05rem;
+  border-bottom: 2px solid var(--ink);
+}
+.stone--served .stone__cap {
+  background: var(--sign);
+  color: var(--paper);
+}
+.stone__body {
+  padding: 0.4rem 0.6rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 550;
+}
+
+/* --- Scroll reveals (armed by RevealDirective) ---------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-armed[data-reveal='rise'] {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  }
+  .reveal-armed[data-reveal='wipe'] > * {
+    /* Clip the child, not the observed element, so IntersectionObserver still sees it. */
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.9s var(--ease);
+  }
+  .reveal-armed.is-in[data-reveal='rise'] {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-armed.is-in[data-reveal='wipe'] > * {
+    clip-path: inset(0);
+  }
+
+  /* Route changes cross-fade through the View Transitions API. */
+  ::view-transition-old(root) {
+    animation: 0.18s ease-out both vt-out;
+  }
+  ::view-transition-new(root) {
+    animation: 0.32s var(--ease) both vt-in;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+/* Room for the fixed call / enquiry bar on phones. */
+@media (max-width: 47.99rem) {
+  body {
+    padding-bottom: 3.75rem;
+  }
+}
