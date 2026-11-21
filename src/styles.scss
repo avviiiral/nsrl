@@ -434,3 +434,85 @@ app-service-section {
     padding-bottom: 3.75rem;
   }
 }
+
+
+/* --- Depth & motion system -------------------------------------------------
+   Progressive enhancement: the page remains fully usable without hover,
+   pointer precision, or motion. Components opt into depth through their
+   existing card/button/stone classes; no JS or WebGL dependency is required.
+--------------------------------------------------------------------------- */
+:root {
+  --depth-shadow: 0 1.25rem 3rem rgb(21 25 27 / 10%);
+  --depth-shadow-hover: 0 1.8rem 3.8rem rgb(21 25 27 / 17%);
+  --depth-transition: transform 420ms var(--ease), box-shadow 420ms var(--ease),
+    border-color 280ms var(--ease), background-color 280ms var(--ease);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn {
+    transform: translateZ(0);
+    transition: var(--depth-transition), color 0.25s var(--ease);
+  }
+
+  .btn:hover,
+  .btn:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgb(21 25 27 / 16%);
+  }
+
+  .stone {
+    transform: perspective(900px) rotateX(0) translateY(0);
+    transform-origin: center bottom;
+    transition: var(--depth-transition);
+    box-shadow: 0 5px 0 rgb(21 25 27 / 10%);
+  }
+
+  .stone:hover {
+    transform: perspective(900px) rotateX(2deg) translateY(-5px);
+    box-shadow: var(--depth-shadow);
+  }
+
+  /* Shared card hooks used by page sections where present. */
+  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card) {
+    transform: translateZ(0);
+    transform-style: preserve-3d;
+    transition: var(--depth-transition);
+    will-change: transform;
+  }
+
+  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card):hover {
+    transform: perspective(1100px) translateY(-6px) rotateX(1deg);
+    box-shadow: var(--depth-shadow-hover);
+  }
+
+  a:not(.btn):not(.text-link) {
+    transition: color 220ms var(--ease), opacity 220ms var(--ease);
+  }
+
+  /* Route content enters gently without changing document flow. */
+  router-outlet + * {
+    animation: route-enter 420ms var(--ease) both;
+  }
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0.82;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card),
+  .stone,
+  .btn {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+    will-change: auto;
+  }
+}
