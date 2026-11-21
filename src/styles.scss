@@ -436,80 +436,116 @@ app-service-section {
 }
 
 
-/* --- Depth & motion system -------------------------------------------------
-   Progressive enhancement: the page remains fully usable without hover,
-   pointer precision, or motion. Components opt into depth through their
-   existing card/button/stone classes; no JS or WebGL dependency is required.
+/* --- Spatial depth & motion system ---------------------------------------
+   Real component hooks used by NSRL pages. The treatment is deliberately
+   restrained: depth on hover, layered hero lighting, and clear focus states.
+   No WebGL, cursor tracking, layout shift, or motion dependency.
 --------------------------------------------------------------------------- */
 :root {
-  --depth-shadow: 0 1.25rem 3rem rgb(21 25 27 / 10%);
-  --depth-shadow-hover: 0 1.8rem 3.8rem rgb(21 25 27 / 17%);
+  --depth-shadow: 0 1rem 2.5rem rgb(21 25 27 / 10%);
+  --depth-shadow-hover: 0 1.5rem 3.25rem rgb(21 25 27 / 17%);
   --depth-transition: transform 420ms var(--ease), box-shadow 420ms var(--ease),
     border-color 280ms var(--ease), background-color 280ms var(--ease);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .btn {
-    transform: translateZ(0);
-    transition: var(--depth-transition), color 0.25s var(--ease);
+  /* Hero: layered editorial depth without obscuring the headline. */
+  app-hero {
+    perspective: 1200px;
   }
-
-  .btn:hover,
-  .btn:focus-visible {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 24px rgb(21 25 27 / 16%);
-  }
-
-  .stone {
-    transform: perspective(900px) rotateX(0) translateY(0);
-    transform-origin: center bottom;
-    transition: var(--depth-transition);
-    box-shadow: 0 5px 0 rgb(21 25 27 / 10%);
-  }
-
-  .stone:hover {
-    transform: perspective(900px) rotateX(2deg) translateY(-5px);
-    box-shadow: var(--depth-shadow);
-  }
-
-  /* Shared card hooks used by page sections where present. */
-  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card) {
-    transform: translateZ(0);
+  app-hero .hero__media {
     transform-style: preserve-3d;
-    transition: var(--depth-transition);
-    will-change: transform;
+    backface-visibility: hidden;
+  }
+  app-hero .hero__inner {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 22px rgb(0 0 0 / 24%);
+  }
+  app-hero .sign {
+    box-shadow: 0 5px 0 rgb(0 0 0 / 18%), 0 0 0 3px var(--sign),
+      0 12px 28px rgb(0 0 0 / 22%);
   }
 
-  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card):hover {
-    transform: perspective(1100px) translateY(-6px) rotateX(1deg);
+  /* Service imagery already uses a reveal directive; add a subtle 3D plane. */
+  app-service-section .service__media {
+    transform: perspective(1400px) rotateY(-2deg) translateZ(0);
+    transform-origin: center;
+    box-shadow: var(--depth-shadow);
+    transition: var(--depth-transition);
+  }
+  app-service-section.is-flipped .service__media {
+    transform: perspective(1400px) rotateY(2deg) translateZ(0);
+  }
+  app-service-section .service__media:hover {
+    transform: perspective(1400px) rotateY(0) translateY(-5px);
     box-shadow: var(--depth-shadow-hover);
   }
 
-  a:not(.btn):not(.text-link) {
-    transition: color 220ms var(--ease), opacity 220ms var(--ease);
+  /* The network map floats gently above its neutral surface. */
+  app-network-section .map svg {
+    filter: drop-shadow(0 14px 18px rgb(21 25 27 / 10%));
+  }
+  app-network-section .pin__dot {
+    transition: r 220ms var(--ease), filter 220ms var(--ease);
+  }
+  app-network-section .pin:hover .pin__dot,
+  app-network-section .pin.is-active .pin__dot {
+    filter: drop-shadow(0 3px 4px rgb(21 25 27 / 28%));
   }
 
-  /* Route content enters gently without changing document flow. */
+  /* Client tiles and kilometre stones respond like physical surfaces. */
+  app-client-logo-section .client {
+    transform: translateZ(0);
+    transform-style: preserve-3d;
+    transition: var(--depth-transition), color 300ms var(--ease);
+  }
+  app-client-logo-section .client:hover {
+    position: relative;
+    z-index: 1;
+    transform: perspective(900px) translateY(-5px) rotateX(2deg);
+    box-shadow: var(--depth-shadow-hover);
+  }
+  .stone {
+    transform: perspective(900px) translateY(0);
+    transform-origin: center bottom;
+    transition: var(--depth-transition);
+    box-shadow: 0 4px 0 rgb(21 25 27 / 10%);
+  }
+  .stone:hover,
+  .stone:focus-visible,
+  .stone.is-active {
+    transform: perspective(900px) translateY(-4px) rotateX(2deg);
+    box-shadow: var(--depth-shadow);
+  }
+
+  .btn {
+    transition: var(--depth-transition), color 0.25s var(--ease);
+  }
+  .btn:hover,
+  .btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgb(21 25 27 / 15%);
+  }
+
+  /* Route content enters softly; the page's layout remains unchanged. */
   router-outlet + * {
-    animation: route-enter 420ms var(--ease) both;
+    animation: nsrl-route-enter 380ms var(--ease) both;
   }
 }
 
-@keyframes route-enter {
-  from {
-    opacity: 0.82;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes nsrl-route-enter {
+  from { opacity: 0.88; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(.card, .service-card, .network-card, .client-card, .feature-card, .project-card),
+  app-hero .hero__media,
+  app-service-section .service__media,
+  app-client-logo-section .client,
   .stone,
-  .btn {
+  .btn,
+  router-outlet + * {
     transition: none !important;
     transform: none !important;
     animation: none !important;
