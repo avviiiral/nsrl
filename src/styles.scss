@@ -11,24 +11,33 @@
 
 /* ---------------------------------------------------------------------------
    NSRL design tokens.
-   The palette comes from the road itself: asphalt, concrete, the yellow of a
-   national-highway kilometre stone and the green of a highway signboard.
-   When the original logo file is supplied, tune --signal / --sign to sit with
-   it here; nothing else in the codebase hard-codes a colour.
+
+   Brand red is sampled from the original NSRL logo (#DE2A1B). The rest of the
+   palette comes from the road the company works on: night asphalt, poured
+   concrete, and the yellow of a highway centre line. Yellow is reserved for
+   road markings and route lines; it is never used for text on light grounds.
 --------------------------------------------------------------------------- */
 :root {
-  --asphalt: #1b2023;
-  --asphalt-2: #262c30;
-  --concrete: #e8eae5;
-  --concrete-2: #d6d9d2;
+  --red: #de2a1b; /* logo red: fills, large type, CTAs (white text on it: 4.7:1) */
+  --red-deep: #b81f14; /* red text on light grounds (5.8:1 on concrete) */
+  --red-glow: #ff5a47; /* red text on asphalt (6:1) */
+
+  --asphalt: #0f1214;
+  --asphalt-2: #171b1e;
+  --asphalt-3: #22282c;
+  --concrete: #f4f3ef;
+  --concrete-2: #e4e2db;
   --paper: #ffffff;
   --ink: #15191b;
-  --muted: #555d62;
-  --muted-on-dark: #aab2b6;
-  --signal: #f6b900; /* kilometre-stone yellow: fills and markings only, never text on white */
-  --sign: #0c5a43; /* signboard green: links, focus, served-city stones */
-  --sign-bright: #7fd1b3;
+  --muted: #5b6368;
+  --muted-on-dark: #9aa3a8;
+  --line-on-dark: rgb(255 255 255 / 0.14);
+  --marking: #f6b900; /* highway centre line: markings and routes only */
   --danger: #b3261e;
+
+  /* Legacy aliases kept so older component styles resolve to the new palette. */
+  --signal: var(--marking);
+  --sign: var(--red-deep);
 
   --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
@@ -36,14 +45,21 @@
   --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
   --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.5rem);
   --step-2: clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
-  --step-3: clamp(1.9rem, 1.45rem + 2.2vw, 3.5rem);
-  --step-4: clamp(2.3rem, 1.5rem + 4vw, 5.25rem);
+  --step-3: clamp(1.95rem, 1.4rem + 2.6vw, 3.75rem);
+  --step-4: clamp(2.5rem, 1.4rem + 5.2vw, 6.25rem);
+  --step-5: clamp(3rem, 1.2rem + 8vw, 9.5rem);
 
   --gutter: clamp(1.125rem, 0.6rem + 2.6vw, 3rem);
-  --section: clamp(3.5rem, 2.2rem + 6vw, 8rem);
-  --max: 82rem;
-  --header-h: 4.25rem;
+  --section: clamp(4rem, 2.4rem + 7vw, 9rem);
+  --max: 84rem;
+  --header-h: 4.5rem;
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --depth-shadow: 0 1.25rem 2.5rem -0.75rem rgb(15 18 20 / 22%);
+  --depth-shadow-hover: 0 2rem 3.5rem -1rem rgb(15 18 20 / 30%);
+
+  color-scheme: light;
 }
 
 *,
@@ -72,6 +88,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
@@ -83,7 +100,8 @@ ul,
 ol,
 dl,
 dd,
-figure {
+figure,
+blockquote {
   margin: 0;
 }
 
@@ -95,7 +113,8 @@ ol {
 
 img,
 svg,
-iframe {
+iframe,
+canvas {
   display: block;
   max-width: 100%;
 }
@@ -112,18 +131,23 @@ textarea {
   color: inherit;
 }
 
+::selection {
+  background: var(--red);
+  color: var(--paper);
+}
+
 :focus-visible {
-  outline: 3px solid var(--sign);
+  outline: 3px solid var(--red-deep);
   outline-offset: 3px;
 }
 
 .on-dark :focus-visible,
 .on-dark:focus-visible {
-  outline-color: var(--signal);
+  outline-color: var(--marking);
 }
 
 /* --- Type ----------------------------------------------------------------- */
-/* Headlines run condensed and heavy, the way lettering is set on highway signage. */
+/* Headlines run condensed and heavy, like lettering on a highway signboard. */
 .display,
 h1,
 h2,
@@ -131,10 +155,10 @@ h3,
 .h1,
 .h2,
 .h3 {
-  font-stretch: 78%;
-  font-weight: 750;
-  line-height: 1.02;
-  letter-spacing: -0.012em;
+  font-stretch: 74%;
+  font-weight: 780;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
@@ -149,13 +173,41 @@ h2,
 h3,
 .h3 {
   font-size: var(--step-2);
-  line-height: 1.1;
+  line-height: 1.05;
+}
+
+.mega {
+  font-size: var(--step-5);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+}
+
+/* Small uppercase label set like a route plate. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  font-stretch: 110%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+.eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 3px;
+  background: var(--red);
+}
+.on-dark .eyebrow {
+  color: var(--muted-on-dark);
 }
 
 .lead {
   font-size: var(--step-1);
   line-height: 1.45;
-  max-width: 38ch;
+  max-width: 40ch;
 }
 
 .prose p {
@@ -171,21 +223,54 @@ h3,
 .muted {
   color: var(--muted);
 }
+.on-dark .muted {
+  color: var(--muted-on-dark);
+}
+.accent {
+  color: var(--red-deep);
+}
+.on-dark .accent {
+  color: var(--red-glow);
+}
 
 .text-link {
-  color: var(--sign);
-  font-weight: 600;
+  color: var(--red-deep);
+  font-weight: 650;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.22em;
-  transition: text-decoration-color 0.2s;
+  transition: text-decoration-color 0.2s, color 0.2s;
   &:hover {
-    text-decoration-color: var(--signal);
+    text-decoration-color: var(--ink);
   }
 }
 .on-dark .text-link {
   color: var(--paper);
-  text-decoration-color: var(--signal);
+  text-decoration-color: var(--red-glow);
+  &:hover {
+    text-decoration-color: var(--paper);
+  }
+}
+
+/* Arrow link: a short road dash that extends on hover. */
+.go {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 650;
+  text-decoration: none;
+  &::after {
+    content: '';
+    width: 1.5rem;
+    height: 2px;
+    background: currentColor;
+    box-shadow: 0.55rem 0 0 -0.05rem currentColor;
+    transition: width 0.35s var(--ease);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    width: 2.75rem;
+  }
 }
 
 /* Component hosts are block-level so spacing utilities apply to them. */
@@ -197,7 +282,11 @@ app-client-logo-section,
 app-enquiry-form,
 app-contact-information,
 app-cta-section,
-app-service-section {
+app-service-section,
+app-service-visual,
+app-services-rail,
+app-hero-3d,
+app-why-road {
   display: block;
 }
 
@@ -253,6 +342,9 @@ app-service-section {
   .start-7 {
     grid-column-start: 7;
   }
+  .start-8 {
+    grid-column-start: 8;
+  }
 }
 
 .stack > * + * {
@@ -268,19 +360,36 @@ app-service-section {
   white-space: nowrap;
 }
 
+/* The logo's horizontal stripes, reused as a brand texture at low strength. */
+.stripes {
+  background-image: repeating-linear-gradient(
+    180deg,
+    var(--stripe, rgb(255 255 255 / 0.07)) 0 var(--stripe-w, 6px),
+    transparent var(--stripe-w, 6px) var(--stripe-gap, 14px)
+  );
+}
+
+/* Broken centre line, used as a section rule. */
+.centre-line {
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--marking) 0 2.6rem, transparent 2.6rem 5rem);
+}
+
 /* --- Buttons -------------------------------------------------------------- */
 .btn {
   --btn-bg: var(--ink);
   --btn-fg: var(--paper);
+  --btn-hover: var(--red);
+  --btn-hover-fg: var(--paper);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6em;
-  min-height: 3rem;
-  padding: 0.7rem 1.4rem;
+  gap: 0.65em;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.6rem;
   border: 2px solid var(--btn-bg);
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--btn-bg);
   color: var(--btn-fg);
   font-weight: 650;
@@ -290,18 +399,22 @@ app-service-section {
   cursor: pointer;
   overflow: hidden;
   isolation: isolate;
-  transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
+  transition:
+    color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    transform 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
 
-  /* The fill slides in from the left like a barrier arm coming down. */
+  /* The fill sweeps in from the left like a barrier arm coming down. */
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--btn-hover, var(--sign));
+    background: var(--btn-hover);
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.35s var(--ease);
+    transition: transform 0.45s var(--ease-out);
   }
   &:hover::before,
   &:focus-visible::before {
@@ -309,8 +422,8 @@ app-service-section {
   }
   &:hover,
   &:focus-visible {
-    border-color: var(--btn-hover, var(--sign));
-    color: var(--btn-hover-fg, var(--paper));
+    border-color: var(--btn-hover);
+    color: var(--btn-hover-fg);
   }
   &[disabled] {
     opacity: 0.6;
@@ -318,18 +431,23 @@ app-service-section {
   }
 }
 
-.btn--signal {
-  --btn-bg: var(--signal);
-  --btn-fg: var(--ink);
+.btn--red {
+  --btn-bg: var(--red);
+  --btn-fg: var(--paper);
   --btn-hover: var(--paper);
   --btn-hover-fg: var(--ink);
+}
+/* Kept for existing markup: the primary call to action is now brand red. */
+.btn--signal {
+  @extend .btn--red;
 }
 
 .btn--ghost {
   --btn-fg: var(--ink);
+  --btn-hover: var(--ink);
   background: transparent;
   border-color: currentColor;
-  --btn-hover: var(--ink);
+  color: var(--btn-fg);
 }
 .on-dark .btn--ghost {
   --btn-fg: var(--paper);
@@ -349,8 +467,7 @@ app-service-section {
 }
 
 /* --- Kilometre stone ------------------------------------------------------ */
-/* National-highway stones carry a yellow cap, state-highway stones a green one.
-   Here yellow marks an NSRL office and green a city served. */
+/* Highway stones carry a coloured cap. Red marks an NSRL office, asphalt a city served. */
 .stone {
   display: inline-flex;
   flex-direction: column;
@@ -365,14 +482,15 @@ app-service-section {
 }
 .stone__cap {
   padding: 0.7rem 0.9rem 0.45rem;
-  background: var(--signal);
+  background: var(--red);
+  color: var(--paper);
   font-stretch: 78%;
   font-weight: 750;
   font-size: 1.05rem;
   border-bottom: 2px solid var(--ink);
 }
 .stone--served .stone__cap {
-  background: var(--sign);
+  background: var(--asphalt-3);
   color: var(--paper);
 }
 .stone__body {
@@ -385,13 +503,16 @@ app-service-section {
 @media (prefers-reduced-motion: no-preference) {
   .reveal-armed[data-reveal='rise'] {
     opacity: 0;
-    transform: translateY(1.25rem);
-    transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    transform: translateY(1.75rem);
+    transition:
+      opacity 0.9s var(--ease-out),
+      transform 0.9s var(--ease-out);
+    transition-delay: var(--reveal-delay, 0s);
   }
   .reveal-armed[data-reveal='wipe'] > * {
     /* Clip the child, not the observed element, so IntersectionObserver still sees it. */
     clip-path: inset(0 0 100% 0);
-    transition: clip-path 0.9s var(--ease);
+    transition: clip-path 1.1s var(--ease-out);
   }
   .reveal-armed.is-in[data-reveal='rise'] {
     opacity: 1;
@@ -401,19 +522,45 @@ app-service-section {
     clip-path: inset(0);
   }
 
+  /* Word-by-word headline reveal (SplitDirective). Words are only hidden once armed. */
+  .split-armed .split-word {
+    display: inline-block;
+    transform: translateY(105%);
+    transition: transform 1s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 45ms);
+  }
+  .split-armed.is-in .split-word {
+    transform: none;
+  }
+
   /* Route changes cross-fade through the View Transitions API. */
   ::view-transition-old(root) {
-    animation: 0.18s ease-out both vt-out;
+    animation: 0.2s ease-out both vt-out;
   }
   ::view-transition-new(root) {
-    animation: 0.32s var(--ease) both vt-in;
+    animation: 0.4s var(--ease-out) both vt-in;
   }
 }
+.split-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
 @keyframes vt-out {
@@ -424,131 +571,43 @@ app-service-section {
 @keyframes vt-in {
   from {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: translateY(0.75rem);
   }
+}
+
+/* --- Depth on capable pointers -------------------------------------------- */
+/* Carried forward from the first depth pass: surfaces lift a little under a mouse,
+   never on touch, never with reduced motion. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .lift {
+    transition:
+      transform 0.5s var(--ease),
+      box-shadow 0.5s var(--ease);
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--depth-shadow-hover);
+  }
+  .btn:hover,
+  .btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -8px rgb(15 18 20 / 40%);
+  }
+}
+
+/* Pointer tilt (TiltDirective): only armed on fine pointers without reduced motion. */
+.tilt-on {
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.7s var(--ease-out);
+  transform-style: preserve-3d;
+}
+.tilt-on:hover {
+  transition-duration: 0.15s;
 }
 
 /* Room for the fixed call / enquiry bar on phones. */
 @media (max-width: 47.99rem) {
   body {
     padding-bottom: 3.75rem;
-  }
-}
-
-
-/* --- Spatial depth & motion system ---------------------------------------
-   Real component hooks used by NSRL pages. The treatment is deliberately
-   restrained: depth on hover, layered hero lighting, and clear focus states.
-   No WebGL, cursor tracking, layout shift, or motion dependency.
---------------------------------------------------------------------------- */
-:root {
-  --depth-shadow: 0 1rem 2.5rem rgb(21 25 27 / 10%);
-  --depth-shadow-hover: 0 1.5rem 3.25rem rgb(21 25 27 / 17%);
-  --depth-transition: transform 420ms var(--ease), box-shadow 420ms var(--ease),
-    border-color 280ms var(--ease), background-color 280ms var(--ease);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Hero: layered editorial depth without obscuring the headline. */
-  app-hero {
-    perspective: 1200px;
-  }
-  app-hero .hero__media {
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-  }
-  app-hero .hero__inner {
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 2px 22px rgb(0 0 0 / 24%);
-  }
-  app-hero .sign {
-    box-shadow: 0 5px 0 rgb(0 0 0 / 18%), 0 0 0 3px var(--sign),
-      0 12px 28px rgb(0 0 0 / 22%);
-  }
-
-  /* Service imagery already uses a reveal directive; add a subtle 3D plane. */
-  app-service-section .service__media {
-    transform: perspective(1400px) rotateY(-2deg) translateZ(0);
-    transform-origin: center;
-    box-shadow: var(--depth-shadow);
-    transition: var(--depth-transition);
-  }
-  app-service-section.is-flipped .service__media {
-    transform: perspective(1400px) rotateY(2deg) translateZ(0);
-  }
-  app-service-section .service__media:hover {
-    transform: perspective(1400px) rotateY(0) translateY(-5px);
-    box-shadow: var(--depth-shadow-hover);
-  }
-
-  /* The network map floats gently above its neutral surface. */
-  app-network-section .map svg {
-    filter: drop-shadow(0 14px 18px rgb(21 25 27 / 10%));
-  }
-  app-network-section .pin__dot {
-    transition: r 220ms var(--ease), filter 220ms var(--ease);
-  }
-  app-network-section .pin:hover .pin__dot,
-  app-network-section .pin.is-active .pin__dot {
-    filter: drop-shadow(0 3px 4px rgb(21 25 27 / 28%));
-  }
-
-  /* Client tiles and kilometre stones respond like physical surfaces. */
-  app-client-logo-section .client {
-    transform: translateZ(0);
-    transform-style: preserve-3d;
-    transition: var(--depth-transition), color 300ms var(--ease);
-  }
-  app-client-logo-section .client:hover {
-    position: relative;
-    z-index: 1;
-    transform: perspective(900px) translateY(-5px) rotateX(2deg);
-    box-shadow: var(--depth-shadow-hover);
-  }
-  .stone {
-    transform: perspective(900px) translateY(0);
-    transform-origin: center bottom;
-    transition: var(--depth-transition);
-    box-shadow: 0 4px 0 rgb(21 25 27 / 10%);
-  }
-  .stone:hover,
-  .stone:focus-visible,
-  .stone.is-active {
-    transform: perspective(900px) translateY(-4px) rotateX(2deg);
-    box-shadow: var(--depth-shadow);
-  }
-
-  .btn {
-    transition: var(--depth-transition), color 0.25s var(--ease);
-  }
-  .btn:hover,
-  .btn:focus-visible {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgb(21 25 27 / 15%);
-  }
-
-  /* Route content enters softly; the page's layout remains unchanged. */
-  router-outlet + * {
-    animation: nsrl-route-enter 380ms var(--ease) both;
-  }
-}
-
-@keyframes nsrl-route-enter {
-  from { opacity: 0.88; transform: translateY(7px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  app-hero .hero__media,
-  app-service-section .service__media,
-  app-client-logo-section .client,
-  .stone,
-  .btn,
-  router-outlet + * {
-    transition: none !important;
-    transform: none !important;
-    animation: none !important;
-    will-change: auto;
   }
 }

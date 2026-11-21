@@ -1,0 +1,35 @@
+<section class="rail" aria-labelledby="rail-title">
+  <div class="rail__pin">
+    <div class="rail__track">
+      <div class="rail__intro">
+        <p class="eyebrow">Services</p>
+        <h2 id="rail-title" appSplit>Three services, one operator.</h2>
+        <p class="rail__lead">
+          Road transport is where NSRL started. Supply chain management and third-party logistics grew out of doing it
+          well.
+        </p>
+        <a class="go" routerLink="/services">All services</a>
+      </div>
+
+      @for (s of services; track s.id; let i = $index) {
+        <article class="rail__panel" [attr.aria-labelledby]="'rail-' + s.id">
+          <div class="rail__visual">
+            <span class="rail__num" aria-hidden="true">0{{ i + 1 }}</span>
+            <app-service-visual [kind]="s.id" />
+          </div>
+          <div class="rail__text">
+            <h3 [id]="'rail-' + s.id">{{ s.name }}</h3>
+            <p>{{ s.summary }}</p>
+            <ul class="rail__benefits">
+              @for (b of s.benefits.slice(0, 2); track b) {
+                <li>{{ b }}</li>
+              }
+            </ul>
+            <a class="go" routerLink="/services" [fragment]="s.id">View service<span class="visually-hidden">: {{ s.name }}</span></a>
+          </div>
+        </article>
+      }
+    </div>
+    <div class="rail__bar" aria-hidden="true"><span [style.transform]="'scaleX(' + progress() + ')'"></span></div>
+  </div>
+</section>

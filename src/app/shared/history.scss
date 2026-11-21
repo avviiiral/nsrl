@@ -1,0 +1,122 @@
+:host {
+  position: relative;
+  display: block;
+  --pad: 2.5rem;
+}
+
+/* Vertical road on phones, horizontal on wide screens. */
+.road {
+  position: absolute;
+  left: 0.55rem;
+  top: 0.4rem;
+  bottom: 0;
+  width: 6px;
+  background: rgb(255 255 255 / 0.1);
+}
+.road__line {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, var(--marking) 0 1.4rem, transparent 1.4rem 2.4rem);
+  transform-origin: top;
+  transform: scaleY(var(--t, 1));
+}
+.road__truck {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--t, 1) * 100%);
+  width: 1.1rem;
+  height: 1.8rem;
+  translate: -50% -50%;
+  background: var(--red);
+  border: 2px solid var(--paper);
+  border-radius: 3px 3px 2px 2px;
+  box-shadow: 0 0 0 4px rgb(222 42 27 / 0.25);
+}
+
+.stops {
+  display: grid;
+  gap: 2.75rem;
+  padding-left: var(--pad);
+}
+.stop {
+  position: relative;
+}
+/* Stages ahead of the truck are quieter, by colour rather than opacity, so they keep full contrast. */
+.stop__title {
+  color: var(--muted-on-dark);
+  transition: color 0.6s var(--ease-out);
+}
+.stop.is-reached .stop__title {
+  color: var(--paper);
+}
+.stop::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--pad) + 0.15rem);
+  top: 0.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--asphalt);
+  border: 3px solid rgb(255 255 255 / 0.35);
+  transition:
+    border-color 0.4s,
+    background-color 0.4s;
+}
+.stop.is-reached::before {
+  border-color: var(--marking);
+  background: var(--marking);
+}
+.stop__num {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-on-dark);
+  transition: color 0.6s var(--ease-out);
+}
+.stop.is-reached .stop__num {
+  color: var(--red-glow);
+}
+.stop__title {
+  margin-bottom: 0.75rem;
+  max-width: 14ch;
+}
+.stop p {
+  max-width: 34ch;
+  color: var(--muted-on-dark);
+}
+
+@media (min-width: 60rem) {
+  .road {
+    left: 0;
+    right: 0;
+    top: 0.45rem;
+    bottom: auto;
+    width: auto;
+    height: 6px;
+  }
+  .road__line {
+    background: repeating-linear-gradient(90deg, var(--marking) 0 3rem, transparent 3rem 5rem);
+    transform-origin: left;
+    transform: scaleX(var(--t, 1));
+  }
+  .road__truck {
+    left: calc(var(--t, 1) * 100%);
+    top: 50%;
+    width: 1.9rem;
+    height: 1.15rem;
+    border-radius: 2px 4px 4px 2px;
+  }
+  .stops {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gutter);
+    padding: 3.25rem 0 0;
+  }
+  .stop::before {
+    left: 0;
+    top: -3.25rem;
+  }
+}

@@ -1,0 +1,100 @@
+:host {
+  display: block;
+}
+.why {
+  display: grid;
+  gap: 3rem var(--gutter);
+}
+.why__head h2 {
+  margin-top: 1.25rem;
+  max-width: 11ch;
+}
+.why__tag {
+  margin-top: 1.5rem;
+  font-stretch: 86%;
+  font-weight: 650;
+  font-size: var(--step-1);
+  color: var(--red-deep);
+}
+
+.why__road {
+  position: relative;
+  padding-left: 0;
+}
+/* The road: a dashed centre line between the stones, drawn with scroll. */
+.why__line {
+  position: absolute;
+  left: 1.95rem;
+  top: 1rem;
+  bottom: 1rem;
+  width: 4px;
+  background: var(--concrete-2);
+}
+.why__line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, var(--marking) 0 1.1rem, transparent 1.1rem 1.9rem);
+  transform-origin: top;
+  transform: scaleY(var(--t, 1));
+}
+
+.why__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+}
+.why__row + .why__row {
+  border-top: 1px solid var(--concrete-2);
+}
+/* A kilometre stone: rounded cap, flat base. */
+.why__stone {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 4rem;
+  border: 2px solid var(--ink);
+  border-radius: 2rem 2rem 2px 2px;
+  overflow: hidden;
+  background: var(--paper);
+  text-align: center;
+  line-height: 1;
+  align-self: start;
+}
+.why__cap {
+  padding: 0.65rem 0 0.35rem;
+  background: var(--red);
+  color: var(--paper);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border-bottom: 2px solid var(--ink);
+}
+.why__km {
+  padding: 0.45rem 0 0.5rem;
+  font-stretch: 74%;
+  font-weight: 800;
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
+}
+.why__term {
+  font-size: var(--step-2);
+}
+.why__row p {
+  margin-top: 0.6rem;
+  max-width: 48ch;
+  color: var(--muted);
+}
+
+@media (min-width: 60rem) {
+  .why {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+  .why__head {
+    position: sticky;
+    top: calc(var(--header-h) + 3rem);
+  }
+}

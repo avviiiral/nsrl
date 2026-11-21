@@ -1,8 +1,25 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  PLATFORM_ID,
+  afterNextRender,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter } from 'rxjs';
 import { NAV, SERVICES } from '../core/site.config';
 
-/** Primary link list. Rendered as a bar in the desktop header and as a stacked list in the mobile panel. */
+/**
+ * Primary link list: a bar in the desktop header, a stacked list in the mobile
+ * panel. On the bar, one marker slides to the link under the pointer and
+ * settles back on the current page's link.
+ */
 @Component({
   selector: 'app-navigation',
   imports: [RouterLink, RouterLinkActive],
@@ -10,113 +27,81 @@ import { NAV, SERVICES } from '../core/site.config';
   host: { '[class.is-panel]': 'layout() === "panel"' },
   template: `
     <nav [attr.aria-label]="layout() === 'panel' ? 'Mobile' : 'Primary'">
-      <ul class="links">
-        @for (item of nav; track item.path) {
-          <li [class.has-sub]="item.path === '/services'">
-            <a [routerLink]="item.path" routerLinkActive="is-active" (click)="navigated.emit()">{{ item.label }}</a>
+      <ul class="links" (mouseleave)="settle()">
+        @for (item of nav; track item.path; let i = $index) {
+          <li [class.has-sub]="item.path === '/services'" [style.--i]="i">
+            <a
+              class="link"
+              [routerLink]="item.path"
+              routerLinkActive="is-active"
+              ariaCurrentWhenActive="page"
+              (click)="navigated.emit()"
+              (mouseenter)="mark($event)"
+              (focus)="mark($event)"
+              >{{ item.label }}</a
+            >
             @if (item.path === '/services') {
-              <ul class="sub">
-                @for (s of services; track s.id) {
-                  <li>
-                    <a routerLink="/services" [fragment]="s.id" (click)="navigated.emit()">{{ s.name }}</a>
-                  </li>
-                }
-              </ul>
+              <div class="sub">
+                <ul class="sub__list">
+                  @for (s of services; track s.id; let j = $index) {
+                    <li>
+                      <a class="sub__link" routerLink="/services" [fragment]="s.id" (click)="navigated.emit()">
+                        <span class="sub__num">0{{ j + 1 }}</span>
+                        <span class="sub__name">{{ s.name }}</span>
+                        <span class="sub__text">{{ s.summary }}</span>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
             }
           </li>
         }
       </ul>
+      @if (layout() === 'bar') {
+        <span class="marker" aria-hidden="true" [style.--x.px]="marker().x" [style.--w.px]="marker().w" [class.is-on]="marker().w > 0"></span>
+      }
     </nav>
   `,
-  styles: `
-    .links {
-      display: flex;
-      align-items: center;
-      gap: clamp(1rem, 2vw, 2rem);
-    }
-    li {
-      position: relative;
-    }
-    a {
-      display: inline-block;
-      padding: 0.5rem 0;
-      font-weight: 600;
-      text-decoration: none;
-      /* The underline is a road marking: it draws in from the left on hover. */
-      background: linear-gradient(var(--signal), var(--signal)) left bottom / 0 3px no-repeat;
-      transition: background-size 0.3s var(--ease);
-    }
-    a:hover,
-    a:focus-visible,
-    a.is-active {
-      background-size: 100% 3px;
-    }
-    .sub {
-      position: absolute;
-      top: 100%;
-      left: -1rem;
-      min-width: 17rem;
-      padding: 0.5rem 1rem 0.75rem;
-      background: var(--paper);
-      border: 2px solid var(--ink);
-      border-radius: 3px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-0.4rem);
-      transition: opacity 0.2s, transform 0.2s var(--ease), visibility 0.2s;
-    }
-    .sub a {
-      display: block;
-      font-weight: 500;
-    }
-    .has-sub:hover .sub,
-    .has-sub:focus-within .sub {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-    }
-
-    :host(.is-panel) .links {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0;
-    }
-    :host(.is-panel) li {
-      border-bottom: 1px solid rgb(255 255 255 / 0.16);
-    }
-    :host(.is-panel) a {
-      display: block;
-      padding: 0.95rem 0;
-      font-size: 1.6rem;
-      font-stretch: 78%;
-      font-weight: 750;
-      line-height: 1.1;
-    }
-    :host(.is-panel) .sub {
-      position: static;
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      min-width: 0;
-      padding: 0 0 0.75rem;
-      background: none;
-      border: 0;
-    }
-    :host(.is-panel) .sub li {
-      border: 0;
-    }
-    :host(.is-panel) .sub a {
-      padding: 0.6rem 0;
-      font-size: 1rem;
-      font-stretch: 100%;
-      font-weight: 500;
-      color: var(--muted-on-dark);
-    }
-  `,
+  styleUrl: './navigation.scss',
 })
 export class NavigationComponent {
   readonly layout = input<'bar' | 'panel'>('bar');
   readonly navigated = output<void>();
   protected readonly nav = NAV;
   protected readonly services = SERVICES;
+  protected readonly marker = signal({ x: 0, w: 0 });
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    const router = inject(Router);
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      this.settle();
+      const sub = router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => requestAnimationFrame(() => this.settle()));
+      // Web font swap changes link widths.
+      void document.fonts?.ready.then(() => this.settle());
+      destroyRef.onDestroy(() => sub.unsubscribe());
+    });
+  }
+
+  protected mark(event: Event): void {
+    if (this.layout() !== 'bar') return;
+    this.place(event.target as HTMLElement);
+  }
+
+  /** Return the marker to the current page's link, or hide it. */
+  protected settle(): void {
+    if (this.layout() !== 'bar') return;
+    const active = this.host.nativeElement.querySelector<HTMLElement>('.link.is-active');
+    if (active) this.place(active);
+    else this.marker.update((m) => ({ ...m, w: 0 }));
+  }
+
+  private place(link: HTMLElement): void {
+    const nav = this.host.nativeElement.querySelector('nav')!.getBoundingClientRect();
+    const r = link.getBoundingClientRect();
+    this.marker.set({ x: r.left - nav.left, w: r.width });
+  }
 }

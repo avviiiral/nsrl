@@ -1,0 +1,168 @@
+nav {
+  position: relative;
+}
+.links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 2.2vw, 2.25rem);
+}
+li {
+  position: relative;
+}
+.link {
+  display: inline-block;
+  padding: 0.6rem 0;
+  font-weight: 600;
+  font-size: 0.98rem;
+  text-decoration: none;
+}
+
+/* One marker for the whole bar: it glides between links. */
+.marker {
+  position: absolute;
+  left: 0;
+  bottom: 0.15rem;
+  width: var(--w, 0);
+  height: 2px;
+  background: var(--red);
+  transform: translateX(var(--x, 0));
+  opacity: 0;
+  transition:
+    transform 0.45s var(--ease-out),
+    width 0.45s var(--ease-out),
+    opacity 0.3s;
+  pointer-events: none;
+}
+.marker.is-on {
+  opacity: 1;
+}
+
+/* Services dropdown: unfolds downward from the bar. */
+.sub {
+  position: absolute;
+  top: calc(100% + 0.9rem);
+  left: -1.5rem;
+  width: min(34rem, 80vw);
+  padding: 0.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow:
+    0 1px 0 rgb(15 18 20 / 0.08),
+    0 24px 48px -16px rgb(15 18 20 / 0.35);
+  border-top: 3px solid var(--red);
+  visibility: hidden;
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(-0.4rem);
+  transition:
+    clip-path 0.45s var(--ease-out),
+    opacity 0.25s,
+    transform 0.45s var(--ease-out),
+    visibility 0.45s;
+}
+/* Bridge the gap so the pointer can travel from link to panel. */
+.sub::before {
+  content: '';
+  position: absolute;
+  inset: -1.2rem 0 100%;
+}
+.has-sub:hover .sub,
+.has-sub:focus-within .sub {
+  visibility: visible;
+  opacity: 1;
+  clip-path: inset(0 0 -2rem 0);
+  transform: none;
+}
+.sub__link {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.15rem 0.5rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  transition: background-color 0.25s;
+}
+.sub__link:hover,
+.sub__link:focus-visible {
+  background: var(--concrete);
+}
+.sub__num {
+  grid-row: span 2;
+  padding-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--red-deep);
+  font-variant-numeric: tabular-nums;
+}
+.sub__name {
+  font-weight: 700;
+}
+.sub__text {
+  font-size: var(--step--1);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* --- Mobile panel layout ------------------------------------------------------ */
+:host(.is-panel) .links {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+:host(.is-panel) .links > li {
+  border-bottom: 1px solid var(--line-on-dark);
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.5s var(--ease-out),
+    transform 0.5s var(--ease-out);
+  transition-delay: calc(0.12s + var(--i, 0) * 0.05s);
+}
+:host-context(.panel.is-open) .links > li {
+  opacity: 1;
+  transform: none;
+}
+:host(.is-panel) .link {
+  display: block;
+  padding: 1rem 0;
+  font-size: clamp(2rem, 1.4rem + 3vw, 2.75rem);
+  font-stretch: 74%;
+  font-weight: 780;
+  line-height: 1;
+}
+:host(.is-panel) .link.is-active {
+  color: var(--red-glow);
+}
+:host(.is-panel) .sub {
+  position: static;
+  width: auto;
+  padding: 0 0 0.75rem;
+  background: none;
+  color: inherit;
+  box-shadow: none;
+  border: 0;
+  visibility: visible;
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+}
+:host(.is-panel) .sub::before {
+  display: none;
+}
+:host(.is-panel) .sub__link {
+  grid-template-columns: 2rem 1fr;
+  padding: 0.55rem 0;
+}
+:host(.is-panel) .sub__link:hover {
+  background: none;
+}
+:host(.is-panel) .sub__num {
+  grid-row: auto;
+  color: var(--red-glow);
+}
+:host(.is-panel) .sub__name {
+  font-weight: 550;
+  color: var(--muted-on-dark);
+}
+:host(.is-panel) .sub__text {
+  display: none;
+}

@@ -1,0 +1,244 @@
+:host {
+  --land: var(--concrete-2);
+  --land-edge: var(--paper);
+  --label: var(--ink);
+  --label-halo: var(--paper);
+  --served: var(--ink);
+  --served-fill: var(--paper);
+  display: block;
+}
+:host-context(.on-dark) {
+  --land: #1f2529;
+  --land-edge: #2f363b;
+  --label: var(--paper);
+  --label-halo: var(--asphalt);
+  --served: var(--paper);
+  --served-fill: var(--asphalt);
+}
+:host-context(.section--concrete) {
+  --land: var(--paper);
+  --land-edge: var(--concrete-2);
+}
+
+.network {
+  display: grid;
+  gap: 2rem var(--gutter);
+  align-items: start;
+}
+.map svg {
+  width: 100%;
+  height: auto;
+  max-height: 46rem;
+  overflow: visible;
+}
+.map__land path {
+  fill: var(--land);
+  stroke: var(--land-edge);
+  stroke-width: 0.9;
+}
+
+/* Head office → branch arcs. pathLength=1 lets one dash cover the whole curve. */
+.arc {
+  fill: none;
+  stroke: var(--marking);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.75;
+  transition:
+    opacity 0.3s,
+    stroke-width 0.3s;
+}
+.arc.is-active {
+  opacity: 1;
+  stroke-width: 2.6;
+}
+.arc.is-dim {
+  opacity: 0.12;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :host(.is-armed) .arc {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  :host(.is-armed.is-in) .arc {
+    stroke-dashoffset: 0;
+    transition:
+      stroke-dashoffset 1.4s var(--ease-out),
+      opacity 0.3s,
+      stroke-width 0.3s;
+    transition-delay: calc(0.25s + var(--i, 0) * 0.12s), 0s, 0s;
+  }
+  :host(.is-armed) .pin {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  :host(.is-armed.is-in) .pin {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s var(--ease-out),
+      transform 0.6s var(--ease-out);
+    transition-delay: 0.1s;
+  }
+  .pin__pulse {
+    animation: map-pulse 2.6s var(--ease-out) infinite;
+  }
+}
+
+.pin {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.3s;
+}
+.pin__hit {
+  fill: transparent;
+}
+.pin__dot {
+  fill: var(--red);
+  stroke: var(--label-halo);
+  stroke-width: 2;
+  transition: r 0.25s var(--ease);
+}
+.pin--served .pin__dot {
+  fill: var(--served-fill);
+  stroke: var(--served);
+  stroke-width: 2.5;
+}
+.pin__ring {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 1.5;
+}
+.pin__pulse {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pin.is-dim {
+  opacity: 0.18 !important;
+}
+.pin.is-active .pin__dot {
+  r: 8.5px;
+}
+.map__label {
+  font-stretch: 78%;
+  font-weight: 750;
+  font-size: 17px;
+  fill: var(--label);
+  stroke: var(--label-halo);
+  stroke-width: 5px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+figcaption {
+  margin-top: 0.75rem;
+  max-width: 60ch;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.filter {
+  min-height: 2.75rem;
+  padding: 0.4rem 1rem;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.filter[aria-pressed='true'] {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--paper);
+}
+
+.stones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.9rem, 1fr));
+  gap: 0.75rem;
+}
+.stone {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.3s var(--ease),
+    box-shadow 0.3s var(--ease);
+}
+.stone:hover,
+.stone.is-active {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 0 var(--red);
+}
+
+.detail {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid currentColor;
+}
+.detail__name {
+  margin-bottom: 0.35rem;
+}
+.detail .small {
+  margin-top: 0.5rem;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.key {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--red);
+}
+.key--served {
+  background: var(--served-fill);
+  border: 2.5px solid var(--served);
+}
+.key--arc {
+  width: 1.4rem;
+  height: 3px;
+  border-radius: 0;
+  background: var(--marking);
+}
+
+@keyframes map-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 60rem) {
+  .network {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  }
+  .side {
+    padding-top: 1rem;
+  }
+}
