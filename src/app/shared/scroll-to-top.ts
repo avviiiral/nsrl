@@ -22,10 +22,13 @@ import { isPlatformBrowser } from '@angular/common';
       place-items: center;
       width: 3rem;
       height: 3rem;
-      border: 2px solid var(--ink);
-      border-radius: 3px;
-      background: var(--signal);
-      color: var(--ink);
+      border: 0;
+      border-radius: 2px;
+      background: var(--asphalt);
+      color: var(--paper);
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.18),
+        0 10px 24px -8px rgb(15 18 20 / 0.5);
       cursor: pointer;
       opacity: 0;
       visibility: hidden;
@@ -37,8 +40,9 @@ import { isPlatformBrowser } from '@angular/common';
       visibility: visible;
       transform: none;
     }
-    .top:hover {
-      background: var(--paper);
+    .top:hover,
+    .top:focus-visible {
+      background: var(--red);
     }
     @media (max-width: 47.99rem) {
       .top {

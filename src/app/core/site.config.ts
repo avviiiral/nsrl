@@ -1,9 +1,10 @@
 /**
  * Single source of truth for company facts and content slots.
  *
- * Every value here comes from the existing nsrl.in content supplied in the
- * project brief. Slots set to `null` are waiting on the client — the UI hides
- * or falls back gracefully; nothing is invented to fill them.
+ * Every value here was checked against the live nsrl.in site on 21 Nov 2026
+ * (see REDESIGN-REPORT.md for the audit and the discrepancies it found).
+ * Slots set to `null` are waiting on the client — the UI hides or falls back
+ * gracefully; nothing is invented to fill them.
  */
 
 export interface City {
@@ -29,8 +30,8 @@ export interface Service {
 
 export interface Client {
   name: string;
-  /** Path under /clients, e.g. '/clients/britannia.svg'. null = show the name set in type. */
-  logo: string | null;
+  /** Official logo file under /clients with its intrinsic size. null = show the name set in type. */
+  logo: { src: string; width: number; height: number } | null;
 }
 
 export type ImageKey = 'hero' | 'intro' | 'about' | 'transport' | 'supplyChain' | 'threePl' | 'network' | 'contact';
@@ -41,8 +42,16 @@ export const SITE = {
   tagline: 'Trucking value since 1994',
   business: 'Supply chain and logistics management, transportation and third-party logistics (3PL).',
 
-  /** Drop the original logo file in /public/brand and set its path here. Never redraw it. */
-  logo: null as { src: string; width: number; height: number } | null,
+  /**
+   * The original logo from nsrl.in (/public/brand/nsrl-logo.png), resampled to WebP for
+   * delivery. Never redraw, recolour or crop it.
+   */
+  logo: {
+    src: '/brand/nsrl-logo-320.webp',
+    srcset: '/brand/nsrl-logo-160.webp 160w, /brand/nsrl-logo-320.webp 320w',
+    width: 320,
+    height: 200,
+  } as { src: string; srcset?: string; width: number; height: number } | null,
 
   phones: [
     { display: '+91 94254-10665', tel: '+919425410665', primary: true },
@@ -134,24 +143,44 @@ export const SERVICES: Service[] = [
   },
 ];
 
+/**
+ * Logos are the same official files the live site displays. Bisleri, Samsung and
+ * Nilkamal stay set in type until their files can be supplied (see ASSET-REQUIREMENTS.md).
+ */
 export const CLIENTS: Client[] = [
-  { name: 'Britannia', logo: null },
+  { name: 'Britannia', logo: { src: '/clients/britannia.svg', width: 340, height: 180 } },
   { name: 'Bisleri', logo: null },
   { name: 'Samsung', logo: null },
   { name: 'Nilkamal', logo: null },
-  { name: 'TATA', logo: null },
-  { name: 'DMart', logo: null },
+  { name: 'TATA', logo: { src: '/clients/tata.svg', width: 451, height: 414 } },
+  { name: 'DMart', logo: { src: '/clients/dmart.png', width: 196, height: 46 } },
 ];
 
+export interface Photo {
+  src: string;
+  width: number;
+  height: number;
+  srcset?: string;
+}
+
+/** The only company photograph on nsrl.in: an NSRL Eicher truck at a loading dock. */
+const TRUCK_AT_DOCK: Photo = {
+  src: '/images/nsrl-truck-loading-dock-800.webp',
+  width: 800,
+  height: 1010,
+  srcset:
+    '/images/nsrl-truck-loading-dock-480.webp 480w, /images/nsrl-truck-loading-dock-800.webp 800w, /images/nsrl-truck-loading-dock-1200.webp 1200w',
+};
+
 /**
- * Photography slots. Set `src` to a file in /public/images (WebP or AVIF,
+ * Photography slots. Set a slot to a file in /public/images (WebP or AVIF,
  * properly licensed) with its intrinsic width and height. While a slot is
- * null the site renders a drawn road-surface plate in its place.
+ * null the site renders a drawn road plate in its place.
  */
-export const IMAGES: Record<ImageKey, { src: string; width: number; height: number } | null> = {
+export const IMAGES: Record<ImageKey, Photo | null> = {
   hero: null, // heavy commercial trucks on an Indian highway, wide
-  intro: null, // loading or unloading operation
-  about: null, // fleet or yard, Indore
+  intro: TRUCK_AT_DOCK, // loading or unloading operation
+  about: TRUCK_AT_DOCK, // fleet or yard, Indore
   transport: null, // truck on the road
   supplyChain: null, // distribution centre / dispatch floor
   threePl: null, // warehouse interior

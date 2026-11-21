@@ -7,15 +7,15 @@ import { HistoryComponent } from '../shared/history';
 import { MediaComponent } from '../shared/media';
 import { RevealDirective } from '../shared/reveal.directive';
 import { SectionHeadingComponent } from '../shared/section-heading';
+import { SplitDirective } from '../shared/split.directive';
 
 @Component({
   selector: 'app-about-page',
-  imports: [RouterLink, HeroComponent, MediaComponent, SectionHeadingComponent, HistoryComponent, CtaSectionComponent, RevealDirective],
+  imports: [RouterLink, HeroComponent, MediaComponent, SectionHeadingComponent, HistoryComponent, CtaSectionComponent, RevealDirective, SplitDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-hero
-      image="about"
-      imageAlt="NSRL vehicles in Indore"
+      eyebrow="About NSRL"
       title="A road logistics company from Indore."
       lead="North South Roadlines, known as NSRL, moves goods for Indian businesses and manages the logistics around them."
     />
@@ -23,7 +23,8 @@ import { SectionHeadingComponent } from '../shared/section-heading';
     <section class="section">
       <div class="wrap grid">
         <div class="col-6 stack">
-          <h2>Trucking first. Everything else followed from doing it well.</h2>
+          <p class="eyebrow">The company</p>
+          <h2 appSplit>Trucking first. Everything else followed from doing it well.</h2>
           <div class="prose">
             <p>
               North South Roadlines works in supply chain and logistics management, transportation and third-party
@@ -37,20 +38,29 @@ import { SectionHeadingComponent } from '../shared/section-heading';
             </p>
           </div>
         </div>
-        <app-media class="col-5 start-7 zoom" appReveal="wipe" image="intro" alt="Goods being loaded onto an NSRL truck" ratio="4 / 3" [tilt]="24" />
+        <figure class="col-5 start-8 story__figure" appReveal="wipe">
+          <app-media class="story__media" image="intro" alt="An NSRL goods carrier, its board lettered NSRL, at a loading dock" ratio="4 / 5" />
+          <figcaption class="small muted">An NSRL goods carrier at a loading dock.</figcaption>
+        </figure>
       </div>
     </section>
 
     <section class="section section--asphalt on-dark">
       <div class="wrap stack" style="--stack: 3rem">
+        <p class="eyebrow">History</p>
         <app-section-heading title="Company history" lead="Three stages that took NSRL from a regional transporter to a 3PL provider." />
-        <app-history />
+        @defer (hydrate on viewport) {
+          <app-history />
+        }
       </div>
     </section>
 
     <section class="section">
       <div class="wrap grid">
-        <app-section-heading class="col-4" title="Company particulars" lead="The facts on record about the business." />
+        <div class="col-4">
+          <p class="eyebrow">On record</p>
+          <app-section-heading class="particulars__head" title="Company particulars" lead="The facts on record about the business." />
+        </div>
         <dl class="col-8 facts">
           @for (f of facts; track f.label) {
             <div>
@@ -92,13 +102,15 @@ import { SectionHeadingComponent } from '../shared/section-heading';
     <section class="section">
       <div class="wrap grid">
         <div class="col-5 stack">
+          <p class="eyebrow">Expertise</p>
           <app-section-heading title="Logistics expertise" lead="Three areas of work, each grown out of the one before." />
-          <p><a class="btn" routerLink="/services">Explore our services</a></p>
+          <p><a class="btn btn--red" routerLink="/services">Explore our services</a></p>
         </div>
         <ul class="col-6 start-7 expertise">
           @for (s of services; track s.id) {
             <li>
               <a routerLink="/services" [fragment]="s.id">
+                <span class="expertise__num">0{{ $index + 1 }}</span>
                 <h3>{{ s.name }}</h3>
                 <p>{{ s.summary }}</p>
               </a>
@@ -108,9 +120,26 @@ import { SectionHeadingComponent } from '../shared/section-heading';
       </div>
     </section>
 
-    <app-cta-section title="Talk to the team in Indore." text="Call the head office or send an enquiry with your requirement." />
+    @defer (hydrate on viewport) {
+
+      <app-cta-section title="Talk to the team in Indore." text="Call the head office or send an enquiry with your requirement." />
+
+    }
   `,
   styles: `
+    .story__figure {
+      width: 100%;
+    }
+    .story__media {
+      box-shadow: var(--depth-shadow);
+      max-height: 38rem;
+    }
+    .story__figure figcaption {
+      margin-top: 0.75rem;
+    }
+    .particulars__head {
+      margin-top: 1.25rem;
+    }
     .facts > div,
     .values__list > div {
       display: grid;
@@ -137,7 +166,7 @@ import { SectionHeadingComponent } from '../shared/section-heading';
       display: inline-block;
       margin-bottom: 1rem;
       padding: 0.3rem 0.7rem;
-      background: var(--ink);
+      background: var(--red);
       color: var(--paper);
       font-size: var(--step-0);
       font-stretch: 86%;
@@ -160,19 +189,40 @@ import { SectionHeadingComponent } from '../shared/section-heading';
       border-bottom: 2px solid var(--ink);
     }
     .expertise a {
-      display: block;
+      display: grid;
+      grid-template-columns: 2.5rem 1fr;
       padding-block: 1.4rem;
       text-decoration: none;
-      transition: padding-left 0.35s var(--ease), background-color 0.35s var(--ease);
+      transition:
+        padding-left 0.4s var(--ease-out),
+        background-color 0.4s var(--ease-out),
+        color 0.3s;
+    }
+    .expertise a > :not(.expertise__num) {
+      grid-column: 2;
+    }
+    .expertise__num {
+      grid-row: span 2;
+      padding-top: 0.3rem;
+      font-size: 0.8rem;
+      font-weight: 650;
+      color: var(--red-deep);
+      font-variant-numeric: tabular-nums;
     }
     .expertise a:hover,
     .expertise a:focus-visible {
       padding-left: 1rem;
-      background: var(--signal);
+      background: var(--asphalt);
+      color: var(--paper);
+    }
+    .expertise a:hover .expertise__num,
+    .expertise a:focus-visible .expertise__num {
+      color: var(--red-glow);
     }
     .expertise p {
       margin-top: 0.4rem;
       max-width: 44ch;
+      opacity: 0.8;
     }
   `,
 })
@@ -188,6 +238,7 @@ export class AboutPage {
     { label: 'Cities served', value: CITIES.filter((c) => c.served).map((c) => c.name).join(', ') },
     ...SITE.ownership,
   ];
+  /** Draft wording written for this site. It makes no factual claim but needs the company's approval. */
   protected readonly values = [
     { term: 'Reliability', text: 'We do what we said we would, when we said we would.' },
     { term: 'Accountability', text: 'One company answers for the consignment from pickup to delivery.' },

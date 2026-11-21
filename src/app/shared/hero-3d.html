@@ -1,0 +1,66 @@
+<div class="stage" aria-hidden="true">
+  <!-- Poster: prerendered, light, and the permanent view when 3D is off. -->
+  <div class="poster">
+    <div class="poster__sun"></div>
+    <svg class="poster__hills" viewBox="0 0 1440 160" preserveAspectRatio="none" focusable="false">
+      <path d="M0 160V96l70-18 64 22 92-40 78 30 66-14 98 34 84-48 72 26 90-30 104 40 78-22 92 28 96-46 84 32 78-12 96 30 68-20v122Z" />
+      <path class="poster__hills-near" d="M0 160v-28l120-20 104 16 140-28 96 22 132-18 110 20 140-26 118 24 132-14 120 18 128-22 100 18v58Z" />
+    </svg>
+    <div class="poster__road"><div class="poster__surface"></div></div>
+  </div>
+  <canvas #canvas class="stage__canvas"></canvas>
+  <div class="stage__grade"></div>
+  <!-- Route indicator: where the reader is in the hero. Decorative; the headings carry the structure. -->
+  <div class="hud" aria-hidden="true">
+    <ol class="hud__route">
+      @for (n of [0, 1, 2]; track n) {
+        <li [class.is-on]="chapter() >= n" [class.is-here]="chapter() === n">0{{ n + 1 }}</li>
+      }
+    </ol>
+    <p class="hud__cue" [class.is-hidden]="chapter() > 0">Scroll</p>
+  </div>
+</div>
+
+<div class="chapters">
+  <section class="chapter chapter--1" aria-labelledby="hero-title">
+    <div class="wrap chapter__body">
+      <p class="plate"><span class="plate__km">{{ site.brand }}</span>{{ site.tagline }}</p>
+      <h1 id="hero-title" class="chapter__title">Road freight, supply chain and 3PL, run from the centre of India.</h1>
+      <p class="chapter__lead">North South Roadlines moves goods for manufacturers and brands from its base in Indore.</p>
+      <div class="btn-row">
+        <a class="btn btn--red" routerLink="/services">Explore our services</a>
+        <a class="btn btn--ghost" routerLink="/enquiry">Request an enquiry</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter chapter--2" aria-labelledby="hero-network">
+    <div class="wrap chapter__body">
+      <p class="eyebrow">The network</p>
+      <h2 id="hero-network" class="chapter__title">Head office in Indore. Branches in seven cities.</h2>
+      <ul class="chapter__cities">
+        @for (c of branches; track c.id) {
+          <li>{{ c.name }}</li>
+        }
+      </ul>
+      <a class="go" routerLink="/network">Explore the network</a>
+    </div>
+  </section>
+
+  <section class="chapter chapter--3" aria-labelledby="hero-services">
+    <div class="wrap chapter__body">
+      <p class="eyebrow">What NSRL does</p>
+      <h2 id="hero-services" class="chapter__title">Transportation. Supply chain. Third-party logistics.</h2>
+      <ol class="chapter__services">
+        @for (s of services; track s.id; let i = $index) {
+          <li>
+            <a routerLink="/services" [fragment]="s.id">
+              <span class="chapter__num">0{{ i + 1 }}</span>
+              <span>{{ s.short }}</span>
+            </a>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+</div>

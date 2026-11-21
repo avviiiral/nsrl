@@ -1,0 +1,47 @@
+<header class="bar">
+  <div class="wrap bar__inner">
+    <a class="brand" routerLink="/" (click)="close()">
+      @if (site.logo; as logo) {
+        <img
+          class="brand__logo"
+          [src]="logo.src"
+          [attr.srcset]="logo.srcset ?? null"
+          sizes="72px"
+          [width]="logo.width"
+          [height]="logo.height"
+          [alt]="site.brand"
+          fetchpriority="high"
+        />
+      } @else {
+        <span class="brand__mark">{{ site.brand }}</span>
+      }
+      <span class="brand__name">{{ site.name }}</span>
+    </a>
+
+    <app-navigation class="bar__nav" />
+
+    <div class="bar__actions">
+      <a class="bar__phone" [href]="'tel:' + phone.tel">
+        <span class="bar__phone-label">Call</span>
+        {{ phone.display }}
+      </a>
+      <a class="btn btn--red bar__cta" routerLink="/enquiry">Request an enquiry</a>
+      <button class="burger" type="button" [attr.aria-expanded]="open()" aria-controls="mobile-menu" (click)="toggle()">
+        <span class="visually-hidden">{{ open() ? 'Close menu' : 'Open menu' }}</span>
+        <span class="burger__lines" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+  <div class="bar__progress" aria-hidden="true" [style.transform]="'scaleX(' + progress() + ')'"></div>
+</header>
+
+<div id="mobile-menu" class="panel on-dark" [class.is-open]="open()" [attr.inert]="open() ? null : ''">
+  <div class="wrap panel__inner">
+    <app-navigation layout="panel" (navigated)="close()" />
+    <div class="panel__foot">
+      <a class="btn btn--red" routerLink="/enquiry" (click)="close()">Request an enquiry</a>
+      <a class="btn btn--ghost" [href]="'tel:' + phone.tel">Call {{ phone.display }}</a>
+      <p class="panel__address small">{{ site.address.lines.join(', ') }}</p>
+    </div>
+  </div>
+</div>

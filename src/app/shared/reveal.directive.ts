@@ -1,27 +1,12 @@
-import { Directive, ElementRef, PLATFORM_ID, afterNextRender, inject, input } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, PLATFORM_ID, afterNextRender, inject, input } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-
-let observer: IntersectionObserver | null = null;
-
-function sharedObserver(): IntersectionObserver {
-  observer ??= new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-in');
-          observer!.unobserve(entry.target);
-        }
-      }
-    },
-    { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
-  );
-  return observer;
-}
+import { watchEntrance } from './in-view';
 
 /**
  * Scroll-triggered reveal. `appReveal` fades content up; `appReveal="wipe"`
  * uncovers an image. Content is visible by default (no JS, prerender, reduced
- * motion); the hidden start state only applies once the directive has armed it.
+ * motion, already on screen); the hidden start state only applies once the
+ * directive has armed an element that starts below the fold.
  */
 @Directive({ selector: '[appReveal]', host: { '[attr.data-reveal]': 'appReveal() || "rise"' } })
 export class RevealDirective {
@@ -30,14 +15,17 @@ export class RevealDirective {
 
   constructor() {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const node = this.el.nativeElement;
-      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reduce || !('IntersectionObserver' in window)) return;
-      // Already on screen at load: leave it alone rather than flashing it out and in.
-      if (node.getBoundingClientRect().top < innerHeight * 0.9) return;
-      node.classList.add('reveal-armed');
-      sharedObserver().observe(node);
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+      const stop = watchEntrance(
+        node,
+        () => node.classList.add('reveal-armed'),
+        () => node.classList.add('is-in'),
+        0.1,
+      );
+      destroyRef.onDestroy(stop);
     });
   }
 }

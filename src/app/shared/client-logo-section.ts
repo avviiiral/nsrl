@@ -1,87 +1,72 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CLIENTS } from '../core/site.config';
+import { RevealDirective } from './reveal.directive';
+import { TiltDirective } from './tilt.directive';
 
 /**
- * Client portfolio. Uses each brand's original logo file when one is
- * configured in site.config; otherwise sets the name in type. Brand logos are
- * never redrawn or approximated.
+ * Client portfolio, in two layouts:
+ * - `band`: a slow horizontal gallery for the homepage (pauses on hover and
+ *   focus, stops entirely with reduced motion);
+ * - `wall`: large tiles for the clients page, with pointer tilt.
+ *
+ * Uses each brand's official logo file when one is configured; otherwise the
+ * name is set in type. Logos are never redrawn or approximated.
  */
 @Component({
   selector: 'app-client-logo-section',
+  imports: [RevealDirective, TiltDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.is-large]': 'size() === "large"' },
+  host: { '[class.is-wall]': 'view() === "wall"' },
   template: `
-    <ul class="clients">
-      @for (c of clients; track c.name) {
-        <li class="client">
-          @if (c.logo) {
-            <img [src]="c.logo" [alt]="c.name" loading="lazy" />
-          } @else {
-            <span class="client__name">{{ c.name }}</span>
+    @if (view() === 'band') {
+      <div class="band">
+        <ul class="band__track">
+          @for (c of clients; track c.name) {
+            <li class="band__item">
+              @if (c.logo) {
+                <img [src]="c.logo.src" [width]="c.logo.width" [height]="c.logo.height" [alt]="c.name" loading="lazy" decoding="async" />
+              } @else {
+                <span class="band__name">{{ c.name }}</span>
+              }
+            </li>
           }
-        </li>
-      }
-    </ul>
-  `,
-  styles: `
-    .clients {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      border-top: 2px solid currentColor;
-      border-left: 2px solid currentColor;
-    }
-    .client {
-      position: relative;
-      display: grid;
-      place-items: center;
-      min-height: 6.5rem;
-      padding: 1rem;
-      border-right: 2px solid currentColor;
-      border-bottom: 2px solid currentColor;
-      transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
-    }
-    :host(.is-large) .client {
-      min-height: clamp(8rem, 5rem + 12vw, 14rem);
-    }
-    .client:hover {
-      background: var(--signal);
-      color: var(--ink);
-    }
-    .client__name {
-      font-stretch: 78%;
-      font-weight: 750;
-      font-size: var(--step-2);
-      line-height: 1;
-      letter-spacing: -0.01em;
-    }
-    :host(.is-large) .client__name {
-      font-size: var(--step-3);
-    }
-    img {
-      max-height: 3.5rem;
-      width: auto;
-      filter: grayscale(1);
-      transition: filter 0.3s;
-    }
-    :host(.is-large) img {
-      max-height: 5rem;
-    }
-    .client:hover img {
-      filter: none;
-    }
-    @media (min-width: 48rem) {
-      .clients {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-    @media (min-width: 72rem) {
-      :host(:not(.is-large)) .clients {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-      }
+        </ul>
+        <!-- Second copy makes the loop seamless; hidden from assistive tech. -->
+        <ul class="band__track" aria-hidden="true">
+          @for (c of clients; track c.name) {
+            <li class="band__item">
+              @if (c.logo) {
+                <img [src]="c.logo.src" [width]="c.logo.width" [height]="c.logo.height" alt="" loading="lazy" decoding="async" />
+              } @else {
+                <span class="band__name">{{ c.name }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <ul class="wall">
+        @for (c of clients; track c.name; let i = $index) {
+          <li class="tile" appReveal [style.--reveal-delay]="i * 70 + 'ms'">
+            <div class="tile__face" [appTilt]="5">
+              @if (c.logo) {
+                <img [src]="c.logo.src" [width]="c.logo.width" [height]="c.logo.height" [alt]="c.name" loading="lazy" decoding="async" />
+              } @else {
+                <span class="tile__name">{{ c.name }}</span>
+              }
+            </div>
+            <span class="tile__caption" aria-hidden="true">{{ c.name }}</span>
+          </li>
+        }
+      </ul>
     }
   `,
+  styleUrl: './client-logo-section.scss',
 })
 export class ClientLogoSectionComponent {
+  readonly layout = input<'band' | 'wall'>('band');
+  /** Kept for existing call sites: `large` maps to the wall layout. */
   readonly size = input<'compact' | 'large'>('compact');
   protected readonly clients = CLIENTS;
+  protected readonly view = computed(() => (this.size() === 'large' ? 'wall' : this.layout()));
 }

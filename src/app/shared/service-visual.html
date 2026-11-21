@@ -1,0 +1,79 @@
+@switch (kind()) {
+  @case ('transportation') {
+    <svg class="sv" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="sv-grid-t" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0v20" class="sv__grid" />
+        </pattern>
+      </defs>
+      <rect width="400" height="300" fill="url(#sv-grid-t)" />
+      <path class="sv__road" d="M48 236C128 236 132 132 212 138S318 72 352 64" />
+      <path class="sv__edge" d="M48 236C128 236 132 132 212 138S318 72 352 64" />
+      <path class="sv__centre" d="M48 236C128 236 132 132 212 138S318 72 352 64" />
+      <g class="sv__node sv__node--origin" transform="translate(48 236)">
+        <circle r="17" class="sv__pulse" />
+        <circle r="9" />
+      </g>
+      <text class="sv__label" x="48" y="276" text-anchor="middle">Indore</text>
+      <g class="sv__node sv__node--dest" transform="translate(352 64)">
+        <circle r="9" />
+      </g>
+      <text class="sv__label" x="352" y="36" text-anchor="middle">Destination</text>
+      <g class="sv__truck">
+        <rect x="-15" y="-8" width="22" height="16" rx="1.5" class="sv__truck-box" />
+        <rect x="7" y="-7" width="9" height="14" rx="2.5" class="sv__truck-cab" />
+      </g>
+    </svg>
+  }
+  @case ('supply-chain') {
+    <svg class="sv" viewBox="0 0 400 300" aria-hidden="true" focusable="false">
+      <defs>
+        <pattern id="sv-grid-s" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M20 0H0v20" class="sv__grid" />
+        </pattern>
+      </defs>
+      <rect width="400" height="300" fill="url(#sv-grid-s)" />
+      <path class="sv__link" d="M86 150H170" />
+      <path class="sv__link" d="M230 150H314" />
+      <path class="sv__flow" d="M86 150H170" />
+      <path class="sv__flow" d="M230 150H314" />
+      <rect class="sv__packet sv__packet--a" x="-5" y="-5" width="10" height="10" />
+      <rect class="sv__packet sv__packet--b" x="-5" y="-5" width="10" height="10" />
+
+      <!-- Suppliers: several sources. -->
+      <g class="sv__site" transform="translate(56 150)">
+        <rect x="-26" y="-34" width="22" height="22" />
+        <rect x="4" y="-34" width="22" height="22" />
+        <rect x="-26" y="-4" width="22" height="22" />
+        <rect x="4" y="-4" width="22" height="22" class="sv__site-key" />
+      </g>
+      <text class="sv__label" x="56" y="206" text-anchor="middle">Suppliers</text>
+
+      <!-- Stock point: one shed. -->
+      <g class="sv__site sv__site--hub" transform="translate(200 150)">
+        <path d="M-32 18V-10L0 -32 32 -10V18Z" />
+        <rect x="-12" y="0" width="24" height="18" class="sv__door" />
+      </g>
+      <text class="sv__label" x="200" y="206" text-anchor="middle">Stock point</text>
+
+      <!-- Customers: many destinations. -->
+      <g class="sv__site" transform="translate(344 150)">
+        <circle cx="-14" cy="-16" r="10" />
+        <circle cx="14" cy="-16" r="10" />
+        <circle cx="0" cy="10" r="10" class="sv__site-key" />
+      </g>
+      <text class="sv__label" x="344" y="206" text-anchor="middle">Customers</text>
+    </svg>
+  }
+  @default {
+    <div class="iso" aria-hidden="true">
+      <div class="iso__stack">
+        <div class="iso__layer" style="--z: 3"><span>Customers</span></div>
+        <div class="iso__layer" style="--z: 2"><span>Sales</span></div>
+        <div class="iso__layer" style="--z: 1"><span>Manufacturing</span></div>
+        <div class="iso__layer iso__layer--nsrl" style="--z: 0"><span>Logistics · NSRL</span></div>
+      </div>
+      <p class="iso__key"><span class="iso__swatch"></span>Run by NSRL</p>
+    </div>
+  }
+}

@@ -9,8 +9,7 @@ import { HeroComponent } from '../shared/hero';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-hero
-      image="threePl"
-      imageAlt="Goods ready for dispatch"
+      eyebrow="Enquiry"
       title="Request an enquiry."
       lead="Tell us what needs to move. Every field helps us give you a useful answer the first time."
     />

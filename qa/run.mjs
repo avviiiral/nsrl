@@ -28,7 +28,7 @@ const OUT = new URL('./screenshots/', import.meta.url).pathname;
 const PAGES = ['', 'about', 'services', 'network', 'clients', 'enquiry', 'contact'];
 const WIDTHS = [320, 360, 375, 390, 412, 430, 768, 1024, 1366, 1440, 1920];
 const SHOOT = new Set((process.env.SHOOT ?? '390,1440').split(',').map(Number));
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.xml': 'application/xml', '.txt': 'text/plain' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.xml': 'application/xml', '.txt': 'text/plain', '.webp': 'image/webp', '.png': 'image/png', '.ico': 'image/x-icon' };
 
 if (!existsSync(ROOT)) {
   console.error(`Build folder not found: ${ROOT}\nRun \`npm run build\` first.`);
@@ -90,8 +90,16 @@ try {
       await page.waitForTimeout(700);
       const m = await page.evaluate(() => {
         const vw = document.documentElement.clientWidth;
+        // An element wider than the viewport only matters if no ancestor clips it.
+        const clipped = (el) => {
+          for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+            const o = getComputedStyle(a).overflowX;
+            if (o === 'hidden' || o === 'clip' || o === 'auto' || o === 'scroll') return true;
+          }
+          return false;
+        };
         const wide = [...document.querySelectorAll('body *')]
-          .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.right > vw + 1 || r.left < -1) && getComputedStyle(el).position !== 'fixed' && !el.closest('.hero__media, .plate, .trap, .visually-hidden, .skip, svg'); })
+          .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && (r.right > vw + 1 || r.left < -1) && getComputedStyle(el).position !== 'fixed' && !el.closest('.hero__media, .plate, .trap, .visually-hidden, .skip, svg') && !clipped(el); })
           .slice(0, 5).map((el) => `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 40)}`);
         const small = [...document.querySelectorAll('a.btn, button, .quick a')]
           .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height < 44 && getComputedStyle(el).visibility !== 'hidden'; })

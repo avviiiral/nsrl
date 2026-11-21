@@ -1,19 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IMAGES, ImageKey } from '../core/site.config';
+import { ParallaxDirective } from './parallax.directive';
 
 /**
  * A photography slot. Renders the configured photo when one exists in
- * site.config IMAGES; otherwise draws a road-surface plate so layouts hold
- * their shape until licensed photography is supplied.
+ * site.config IMAGES (responsive, with a slow scroll parallax); otherwise
+ * draws a carriageway seen from above so layouts hold their shape until
+ * licensed photography is supplied. A drawing never stands in for a photo of
+ * the company.
  */
 @Component({
   selector: 'app-media',
+  imports: [ParallaxDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[style.aspect-ratio]': 'ratio()' },
   template: `
     @if (photo(); as p) {
       <img
+        appParallax
+        [speed]="-0.08"
         [src]="p.src"
+        [attr.srcset]="p.srcset ?? null"
+        [attr.sizes]="p.srcset ? sizes() : null"
         [width]="p.width"
         [height]="p.height"
         [alt]="alt()"
@@ -36,12 +44,9 @@ import { IMAGES, ImageKey } from '../core/site.config';
     }
     img {
       width: 100%;
-      height: 100%;
+      height: 110%;
+      margin-top: -5%;
       object-fit: cover;
-      transition: transform 0.9s var(--ease);
-    }
-    :host(.zoom:hover) img {
-      transform: scale(1.04);
     }
     .plate {
       position: absolute;
@@ -68,7 +73,7 @@ import { IMAGES, ImageKey } from '../core/site.config';
       right: 0;
       top: calc(50% - 3px);
       height: 6px;
-      background: repeating-linear-gradient(90deg, var(--signal) 0 3.25rem, transparent 3.25rem 6.5rem);
+      background: repeating-linear-gradient(90deg, var(--marking) 0 3.25rem, transparent 3.25rem 6.5rem);
     }
   `,
 })
@@ -78,5 +83,6 @@ export class MediaComponent {
   readonly ratio = input<string | null>(null);
   readonly priority = input(false);
   readonly tilt = input(-16);
+  readonly sizes = input('(min-width: 60rem) 40vw, 92vw');
   protected readonly photo = computed(() => IMAGES[this.image()]);
 }

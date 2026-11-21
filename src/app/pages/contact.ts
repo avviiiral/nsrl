@@ -11,8 +11,7 @@ import { HeroComponent } from '../shared/hero';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-hero
-      image="contact"
-      imageAlt="NSRL head office, Indore"
+      eyebrow="Contact"
       title="Contact the head office in Indore."
       lead="Call, email or visit. For a quotation, the enquiry form gets the right details to the team fastest."
     />
@@ -36,14 +35,21 @@ import { HeroComponent } from '../shared/hero';
       </div>
     </section>
 
-    <app-cta-section title="Have a load to move?" text="Send the pickup point, destination and what is moving. The Indore team will reply." />
+    @defer (hydrate on viewport) {
+
+      <app-cta-section title="Have a load to move?" text="Send the pickup point, destination and what is moving. The Indore team will reply." />
+
+    }
   `,
   styles: `
     .map iframe {
       width: 100%;
       height: clamp(20rem, 14rem + 30vw, 32rem);
-      border: 2px solid var(--ink);
+      border: 0;
       background: var(--concrete);
+      box-shadow:
+        0 0 0 1px rgb(21 25 27 / 0.12),
+        var(--depth-shadow);
     }
     .map p {
       margin-top: 0.75rem;

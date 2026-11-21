@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AnalyticsService } from '../core/analytics.service';
@@ -22,8 +23,14 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
   template: `
     <div class="note">
       <div class="note__head">
-        <span class="note__title">Enquiry note</span>
-        <span class="small">{{ site.name }}, Indore</span>
+        <div class="note__titles">
+          <span class="note__title">Enquiry note</span>
+          <span class="small">{{ site.name }}, Indore</span>
+        </div>
+        <div class="note__meter" aria-hidden="true">
+          <span class="note__count">{{ filled() }} of {{ total }} details</span>
+          <span class="note__bar"><span [style.transform]="'scaleX(' + filled() / total + ')'"></span></span>
+        </div>
       </div>
 
       @if (status() === 'sent') {
@@ -35,27 +42,27 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
       } @else {
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <div class="cells">
-            <div class="cell" [class.has-error]="bad('name')">
+            <div class="cell" [class.has-error]="bad('name')" [class.is-valid]="good('name')">
               <label for="f-name">Full name</label>
               <input id="f-name" formControlName="name" autocomplete="name" [attr.aria-invalid]="bad('name')" aria-describedby="e-name" />
               <p class="err" id="e-name">@if (bad('name')) { Enter your full name. }</p>
             </div>
-            <div class="cell" [class.has-error]="bad('company')">
+            <div class="cell" [class.has-error]="bad('company')" [class.is-valid]="good('company')">
               <label for="f-company">Company name</label>
               <input id="f-company" formControlName="company" autocomplete="organization" [attr.aria-invalid]="bad('company')" aria-describedby="e-company" />
               <p class="err" id="e-company">@if (bad('company')) { Enter your company name. }</p>
             </div>
-            <div class="cell" [class.has-error]="bad('email')">
+            <div class="cell" [class.has-error]="bad('email')" [class.is-valid]="good('email')">
               <label for="f-email">Email address</label>
               <input id="f-email" type="email" inputmode="email" formControlName="email" autocomplete="email" [attr.aria-invalid]="bad('email')" aria-describedby="e-email" />
               <p class="err" id="e-email">@if (bad('email')) { Enter an email address like name&#64;company.com. }</p>
             </div>
-            <div class="cell" [class.has-error]="bad('phone')">
+            <div class="cell" [class.has-error]="bad('phone')" [class.is-valid]="good('phone')">
               <label for="f-phone">Contact number</label>
               <input id="f-phone" type="tel" inputmode="tel" formControlName="phone" autocomplete="tel" placeholder="+91" [attr.aria-invalid]="bad('phone')" aria-describedby="e-phone" />
               <p class="err" id="e-phone">@if (bad('phone')) { Enter a 10-digit Indian mobile number. }</p>
             </div>
-            <div class="cell cell--wide" [class.has-error]="bad('service')">
+            <div class="cell cell--wide" [class.has-error]="bad('service')" [class.is-valid]="good('service')">
               <label for="f-service">Service required</label>
               <select id="f-service" formControlName="service" [attr.aria-invalid]="bad('service')" aria-describedby="e-service">
                 <option value="" disabled>Choose a service</option>
@@ -66,17 +73,17 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
               </select>
               <p class="err" id="e-service">@if (bad('service')) { Choose the service you need. }</p>
             </div>
-            <div class="cell" [class.has-error]="bad('pickup')">
+            <div class="cell" [class.has-error]="bad('pickup')" [class.is-valid]="good('pickup')">
               <label for="f-pickup">Pickup location</label>
               <input id="f-pickup" formControlName="pickup" placeholder="From" [attr.aria-invalid]="bad('pickup')" aria-describedby="e-pickup" />
               <p class="err" id="e-pickup">@if (bad('pickup')) { Enter where the load starts. }</p>
             </div>
-            <div class="cell" [class.has-error]="bad('delivery')">
+            <div class="cell" [class.has-error]="bad('delivery')" [class.is-valid]="good('delivery')">
               <label for="f-delivery">Delivery location</label>
               <input id="f-delivery" formControlName="delivery" placeholder="To" [attr.aria-invalid]="bad('delivery')" aria-describedby="e-delivery" />
               <p class="err" id="e-delivery">@if (bad('delivery')) { Enter where the load is going. }</p>
             </div>
-            <div class="cell cell--wide" [class.has-error]="bad('message')">
+            <div class="cell cell--wide" [class.has-error]="bad('message')" [class.is-valid]="good('message')">
               <label for="f-message">Message</label>
               <textarea id="f-message" rows="5" formControlName="message" placeholder="What is moving, how much, and when" [attr.aria-invalid]="bad('message')" aria-describedby="e-message"></textarea>
               <p class="err" id="e-message">@if (bad('message')) { Add a few words about the load (at least 10 characters). }</p>
@@ -122,18 +129,45 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
   styles: `
     /* The form is laid out like a transport consignment note: ruled cells on one sheet. */
     .note {
-      border: 2px solid var(--ink);
       background: var(--paper);
+      box-shadow:
+        0 0 0 1px rgb(21 25 27 / 0.14),
+        0 2rem 3.5rem -2rem rgb(15 18 20 / 0.35);
     }
     .note__head {
       display: flex;
       flex-wrap: wrap;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
-      gap: 0.25rem 1rem;
-      padding: 0.8rem 1rem;
-      background: var(--signal);
-      border-bottom: 2px solid var(--ink);
+      gap: 0.75rem 1.5rem;
+      padding: 1rem;
+      background: var(--red);
+      color: var(--paper);
+    }
+    .note__titles {
+      display: grid;
+      gap: 0.15rem;
+    }
+    .note__meter {
+      display: grid;
+      gap: 0.4rem;
+      min-width: 11rem;
+      font-size: var(--step--1);
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+    }
+    .note__bar {
+      position: relative;
+      height: 4px;
+      background: rgb(255 255 255 / 0.3);
+      overflow: hidden;
+    }
+    .note__bar span {
+      position: absolute;
+      inset: 0;
+      background: var(--paper);
+      transform-origin: left;
+      transition: transform 0.5s var(--ease-out);
     }
     .note__title {
       font-stretch: 78%;
@@ -146,18 +180,34 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
     }
     .cell {
       position: relative;
-      padding: 0.75rem 1rem 0.5rem;
-      border-bottom: 1px solid var(--ink);
-      transition: background-color 0.2s;
+      padding: 0.85rem 1rem 0.5rem;
+      border-bottom: 1px solid rgb(21 25 27 / 0.16);
+      transition: background-color 0.3s var(--ease);
     }
     .cell:focus-within {
-      background: #fff8dc;
+      background: #fbf8f6;
+    }
+    .cell:focus-within label {
+      color: var(--red-deep);
+    }
+    /* A small tick once a field holds a valid value. */
+    .cell.is-valid::before {
+      content: '';
+      position: absolute;
+      right: 1rem;
+      top: 1.05rem;
+      width: 0.45rem;
+      height: 0.8rem;
+      border: solid #1f7a4d;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
     }
     label {
       display: block;
       font-size: var(--step--1);
       font-weight: 600;
       color: var(--muted);
+      transition: color 0.25s;
     }
     input:not([type='checkbox']),
     select,
@@ -181,12 +231,22 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
       color: #8a9196;
       font-weight: 400;
     }
-    .cell:focus-within::after {
+    /* Focus: a red rule draws in along the bottom of the active cell. */
+    .cell::after {
       content: '';
       position: absolute;
-      inset: 0;
-      border: 3px solid var(--sign);
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      background: var(--red-deep);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s var(--ease-out);
       pointer-events: none;
+    }
+    .cell:focus-within::after {
+      transform: none;
     }
     .err {
       min-height: 1.3em;
@@ -221,7 +281,7 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
       width: 1.5rem;
       height: 1.5rem;
       margin: 0.1rem 0 0;
-      accent-color: var(--sign);
+      accent-color: var(--red-deep);
     }
     .alert {
       margin-top: 1rem;
@@ -253,14 +313,14 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
         grid-template-columns: 1fr 1fr;
       }
       .cell:nth-child(odd):not(.cell--wide) {
-        border-right: 1px solid var(--ink);
+        border-right: 1px solid rgb(21 25 27 / 0.16);
       }
       /* After the full-width service cell the odd/even rhythm flips. */
       .cell--wide ~ .cell:nth-child(odd):not(.cell--wide) {
         border-right: 0;
       }
       .cell--wide ~ .cell:nth-child(even):not(.cell--wide) {
-        border-right: 1px solid var(--ink);
+        border-right: 1px solid rgb(21 25 27 / 0.16);
       }
       .cell--wide {
         grid-column: 1 / -1;
@@ -269,6 +329,9 @@ type Status = 'idle' | 'sending' | 'sent' | 'failed';
       .cell,
       .note__foot {
         padding-inline: 1.5rem;
+      }
+      .cell.is-valid::before {
+        right: 1.5rem;
       }
       .note__done {
         padding-inline: 1.5rem;
@@ -288,6 +351,8 @@ export class EnquiryFormComponent {
   protected readonly status = signal<Status>('idle');
   protected readonly failure = signal('');
   private readonly submitted = signal(false);
+  protected readonly total = 8;
+  protected readonly filled = signal(0);
   private readonly done = viewChild<ElementRef<HTMLElement>>('done');
   private readonly alert = viewChild<ElementRef<HTMLElement>>('alert');
 
@@ -309,6 +374,16 @@ export class EnquiryFormComponent {
     const requested = inject(ActivatedRoute).snapshot.queryParamMap.get('service');
     const match = SERVICES.find((s) => s.id === requested);
     if (match) this.form.controls.service.setValue(match.name);
+
+    const required = ['name', 'company', 'email', 'phone', 'service', 'pickup', 'delivery', 'message'] as const;
+    const count = () => required.filter((k) => this.form.controls[k].valid).length;
+    this.filled.set(count());
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.filled.set(count()));
+  }
+
+  protected good(name: keyof typeof this.form.controls): boolean {
+    const c = this.form.controls[name];
+    return c.valid && !!c.value && (c.dirty || c.touched);
   }
 
   protected bad(name: keyof typeof this.form.controls): boolean {

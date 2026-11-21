@@ -79,7 +79,7 @@ try {
   await page.getByRole('link', { name: 'Explore our services' }).click(); await page.waitForURL(B + '/services');
   check('hero primary CTA → /services', true);
   await page.goto(B);
-  await page.locator('app-hero').getByRole('link', { name: 'Request an enquiry' }).click(); await page.waitForURL(B + '/enquiry');
+  await page.locator('app-hero-3d').getByRole('link', { name: 'Request an enquiry' }).click(); await page.waitForURL(B + '/enquiry');
   check('hero secondary CTA → /enquiry', true);
   await page.goto(B + '/services');
   await page.getByRole('link', { name: 'Enquire about 3PL' }).click(); await page.waitForURL(/enquiry\?service=3pl/);

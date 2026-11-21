@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import india from '@svg-maps/india';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, PLATFORM_ID, afterNextRender, computed, inject, input, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CITIES, City, SITE } from '../core/site.config';
+import { INDIA_MAP } from './india-map';
+import { watchEntrance } from './in-view';
 
 type Filter = 'all' | 'office' | 'served';
 
@@ -12,6 +14,7 @@ type Filter = 'all' | 'office' | 'served';
  */
 @Component({
   selector: 'app-network-section',
+  host: { '[class.is-armed]': 'armed()', '[class.is-in]': 'inView()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="network">
@@ -20,6 +23,18 @@ type Filter = 'all' | 'office' | 'served';
           <g class="map__land" aria-hidden="true">
             @for (s of map.locations; track s.id) {
               <path [attr.d]="s.path" />
+            }
+          </g>
+          <g class="arcs" aria-hidden="true">
+            @for (a of arcs; track a.id; let i = $index) {
+              <path
+                class="arc"
+                [class.is-active]="active().id === a.id"
+                [class.is-dim]="filter() === 'served'"
+                [attr.d]="a.d"
+                pathLength="1"
+                [style.--i]="i"
+              />
             }
           </g>
           @for (c of cities; track c.id) {
@@ -34,6 +49,7 @@ type Filter = 'all' | 'office' | 'served';
               <circle class="pin__hit" [attr.cx]="c.x" [attr.cy]="c.y" r="16" />
               @if (c.headOffice) {
                 <circle class="pin__ring" [attr.cx]="c.x" [attr.cy]="c.y" r="11" />
+                <circle class="pin__pulse" [attr.cx]="c.x" [attr.cy]="c.y" r="11" />
               }
               <circle class="pin__dot" [attr.cx]="c.x" [attr.cy]="c.y" [attr.r]="c.headOffice ? 6.5 : 5" />
             </g>
@@ -48,7 +64,8 @@ type Filter = 'all' | 'office' | 'served';
           </text>
         </svg>
         <figcaption class="small muted">
-          Indicative city positions, not to scale. Map outline: &#64;svg-maps/india, CC BY 4.0.
+          Lines join each branch to the Indore head office; they show how the network is organised, not specific
+          freight lanes. City positions are indicative. Map outline: &#64;svg-maps/india, CC BY 4.0.
         </figcaption>
       </figure>
 
@@ -94,160 +111,17 @@ type Filter = 'all' | 'office' | 'served';
         <ul class="legend small">
           <li><span class="key key--office"></span>Head office and branches</li>
           <li><span class="key key--served"></span>Cities served</li>
+          <li><span class="key key--arc"></span>Branch linked to head office</li>
         </ul>
       </div>
     </div>
   `,
-  styles: `
-    :host-context(.section--concrete) {
-      --land: var(--paper);
-      --land-edge: var(--concrete-2);
-    }
-    .network {
-      display: grid;
-      gap: 2rem var(--gutter);
-      align-items: start;
-    }
-    .map svg {
-      width: 100%;
-      height: auto;
-      max-height: 44rem;
-      overflow: visible;
-    }
-    .map__land path {
-      fill: var(--land, var(--concrete));
-      stroke: var(--land-edge, var(--paper));
-      stroke-width: 0.9;
-    }
-    .pin {
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-    .pin__hit {
-      fill: transparent;
-    }
-    .pin__dot {
-      fill: var(--signal);
-      stroke: var(--ink);
-      stroke-width: 2;
-      transition: r 0.25s var(--ease);
-    }
-    .pin--served .pin__dot {
-      fill: var(--sign);
-      stroke: var(--paper);
-    }
-    .pin__ring {
-      fill: none;
-      stroke: var(--ink);
-      stroke-width: 1.5;
-    }
-    .pin.is-dim {
-      opacity: 0.2;
-    }
-    .pin.is-active .pin__dot {
-      r: 8.5px;
-    }
-    .map__label {
-      font-stretch: 78%;
-      font-weight: 750;
-      font-size: 17px;
-      fill: var(--ink);
-      stroke: var(--paper);
-      stroke-width: 5px;
-      paint-order: stroke;
-      stroke-linejoin: round;
-      pointer-events: none;
-    }
-    figcaption {
-      margin-top: 0.75rem;
-    }
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .filter {
-      min-height: 2.75rem;
-      padding: 0.4rem 1rem;
-      border: 2px solid var(--ink);
-      border-radius: 3px;
-      background: transparent;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-    }
-    .filter[aria-pressed='true'] {
-      background: var(--ink);
-      color: var(--paper);
-    }
-
-    .stones {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(6.9rem, 1fr));
-      gap: 0.75rem;
-    }
-    .stone {
-      width: 100%;
-      min-width: 0;
-      padding: 0;
-      cursor: pointer;
-      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
-    }
-    .stone:hover,
-    .stone.is-active {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 0 var(--ink);
-    }
-
-    .detail {
-      margin-top: 1.75rem;
-      padding-top: 1.25rem;
-      border-top: 2px solid var(--ink);
-    }
-    .detail__name {
-      margin-bottom: 0.35rem;
-    }
-    .detail .small {
-      margin-top: 0.5rem;
-    }
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1.5rem;
-      margin-top: 1.5rem;
-    }
-    .legend li {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .key {
-      width: 0.95rem;
-      height: 0.95rem;
-      border-radius: 50%;
-      border: 2px solid var(--ink);
-      background: var(--signal);
-    }
-    .key--served {
-      background: var(--sign);
-    }
-
-    @media (min-width: 60rem) {
-      .network {
-        grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-      }
-      .side {
-        padding-top: 1rem;
-      }
-    }
-  `,
+  styleUrl: './network-section.scss',
 })
 export class NetworkSectionComponent {
   readonly filters = input(true);
 
-  protected readonly map = india;
+  protected readonly map = INDIA_MAP;
   protected readonly cities = CITIES;
   protected readonly phone = SITE.phones[0];
   protected readonly filterOptions: { id: Filter; label: string }[] = [
@@ -256,7 +130,41 @@ export class NetworkSectionComponent {
     { id: 'served', label: 'Cities served' },
   ];
 
+  /** Arcs draw in on first view; until armed (prerender, no JS, reduced motion) they are simply shown. */
+  protected readonly armed = signal(false);
+  protected readonly inView = signal(false);
+
+  /** One gentle arc from the head office to each branch, bowed to the north-west. */
+  protected readonly arcs = (() => {
+    const hq = CITIES.find((c) => c.headOffice)!;
+    return CITIES.filter((c) => c.branch && !c.headOffice).map((c) => {
+      const mx = (hq.x + c.x) / 2;
+      const my = (hq.y + c.y) / 2;
+      const dx = c.x - hq.x;
+      const dy = c.y - hq.y;
+      const bow = 0.22;
+      return { id: c.id, d: `M${hq.x} ${hq.y}Q${(mx - dy * bow).toFixed(1)} ${(my + dx * bow).toFixed(1)} ${c.x} ${c.y}` };
+    });
+  })();
+
   protected readonly filter = signal<Filter>('all');
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+      // Already on screen when the code arrives: leave it drawn rather than redraw it.
+      const stop = watchEntrance(
+        this.host.nativeElement,
+        () => this.armed.set(true),
+        () => this.inView.set(true),
+        0.25,
+      );
+      destroyRef.onDestroy(stop);
+    });
+  }
   private readonly activeId = signal('indore');
   protected readonly active = computed(() => CITIES.find((c) => c.id === this.activeId())!);
   protected readonly visible = computed(() => CITIES.filter((c) => this.matches(c)));

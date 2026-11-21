@@ -3,33 +3,35 @@ import { CITIES } from '../core/site.config';
 import { CtaSectionComponent } from '../shared/cta-section';
 import { HeroComponent } from '../shared/hero';
 import { NetworkSectionComponent } from '../shared/network-section';
+import { RevealDirective } from '../shared/reveal.directive';
 import { SectionHeadingComponent } from '../shared/section-heading';
 
 @Component({
   selector: 'app-network-page',
-  imports: [HeroComponent, NetworkSectionComponent, SectionHeadingComponent, CtaSectionComponent],
+  imports: [HeroComponent, NetworkSectionComponent, SectionHeadingComponent, CtaSectionComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-hero
-      image="network"
-      imageAlt="Indian national highway"
+      eyebrow="Our network"
       title="Indore at the centre, branches in seven cities."
       lead="Where NSRL has its own offices, and the cities it serves."
     />
 
-    <section class="section section--concrete">
+    <section class="section section--asphalt on-dark">
       <div class="wrap stack" style="--stack: 2.5rem">
         <app-section-heading
           title="Explore the network"
-          lead="Yellow marks an NSRL office. Green marks a city served. Choose any location for details."
+          lead="Red marks an NSRL office. A white ring marks a city served. Choose any location for details."
         />
-        <app-network-section />
+        @defer (hydrate on viewport) {
+          <app-network-section />
+        }
       </div>
     </section>
 
     <section class="section">
       <div class="wrap grid">
-        <div class="col-6">
+        <div class="col-6" appReveal>
           <h2 class="h3">Offices</h2>
           <p class="muted lists__note">Head office and branches staffed by NSRL.</p>
           <ul class="names">
@@ -43,7 +45,7 @@ import { SectionHeadingComponent } from '../shared/section-heading';
             }
           </ul>
         </div>
-        <div class="col-6">
+        <div class="col-6" appReveal [style.--reveal-delay]="'120ms'">
           <h2 class="h3">Cities served</h2>
           <p class="muted lists__note">Commercial centres NSRL moves goods to and from.</p>
           <ul class="names">
@@ -55,7 +57,11 @@ import { SectionHeadingComponent } from '../shared/section-heading';
       </div>
     </section>
 
-    <app-cta-section title="Shipping to or from one of these cities?" />
+    @defer (hydrate on viewport) {
+
+      <app-cta-section title="Shipping to or from one of these cities?" />
+
+    }
   `,
   styles: `
     .lists__note {
@@ -78,8 +84,9 @@ import { SectionHeadingComponent } from '../shared/section-heading';
     }
     .tag {
       padding: 0.25rem 0.6rem;
-      background: var(--signal);
-      border: 2px solid var(--ink);
+      background: var(--red);
+      color: var(--paper);
+      border: 0;
       border-radius: 3px;
       font-stretch: 100%;
       font-size: var(--step--1);

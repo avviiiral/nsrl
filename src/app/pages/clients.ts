@@ -9,15 +9,14 @@ import { HeroComponent } from '../shared/hero';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-hero
-      image="supplyChain"
-      imageAlt="Goods at a distribution point"
+      eyebrow="Our clients"
       title="The companies NSRL works with."
       lead="Six names from the NSRL client list, across consumer goods, electronics, manufacturing and retail."
     />
 
-    <section class="section">
+    <section class="section section--concrete">
       <div class="wrap">
-        <app-client-logo-section size="large" />
+        <app-client-logo-section layout="wall" />
         <div class="grid after">
           <p class="col-7 display statement">
             Household brands depend on their goods reaching the shelf. These are companies that have put that work in
@@ -31,7 +30,11 @@ import { HeroComponent } from '../shared/hero';
       </div>
     </section>
 
-    <app-cta-section title="Add your company to this list." text="Tell us what you need moved and where. We will show you how NSRL would handle it." />
+    @defer (hydrate on viewport) {
+
+      <app-cta-section title="Add your company to this list." text="Tell us what you need moved and where. We will show you how NSRL would handle it." />
+
+    }
   `,
   styles: `
     .after {

@@ -36,8 +36,8 @@ import { ScrollToTopComponent } from './shared/scroll-to-top';
       top: -4rem;
       z-index: 100;
       padding: 0.75rem 1rem;
-      background: var(--signal);
-      color: var(--ink);
+      background: var(--red);
+      color: var(--paper);
       font-weight: 650;
     }
     .skip:focus {
@@ -49,7 +49,7 @@ import { ScrollToTopComponent } from './shared/scroll-to-top';
       z-index: 45;
       display: grid;
       grid-template-columns: 2fr 3fr;
-      border-top: 2px solid var(--ink);
+      box-shadow: 0 -1px 0 rgb(15 18 20 / 0.15);
     }
     .quick a {
       display: grid;
@@ -63,10 +63,11 @@ import { ScrollToTopComponent } from './shared/scroll-to-top';
     }
     .quick__call {
       background: var(--paper);
+      color: var(--ink);
     }
     .quick__enquiry {
-      background: var(--signal);
-      border-left: 2px solid var(--ink);
+      background: var(--red);
+      color: var(--paper);
     }
     @media (min-width: 48rem) {
       .quick {

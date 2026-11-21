@@ -17,6 +17,7 @@ import { NAV, SERVICES, SITE } from '../core/site.config';
               <span class="footer__mark">{{ site.brand }}</span>
             }
           </a>
+          <p class="footer__name">{{ site.name }}</p>
           <p class="footer__tagline">{{ site.tagline }}</p>
           <p class="small footer__muted">
             {{ site.name }} is a logistics company headquartered in Indore, working in transportation, supply chain
@@ -87,7 +88,7 @@ import { NAV, SERVICES, SITE } from '../core/site.config';
     .footer {
       background: var(--asphalt);
       color: var(--paper);
-      padding-top: clamp(3rem, 2rem + 4vw, 5rem);
+      padding-top: clamp(3.5rem, 2rem + 5vw, 6rem);
       /* Broken centre line across the top edge. */
       border-top: 6px solid transparent;
       border-image: repeating-linear-gradient(90deg, var(--signal) 0 3.25rem, transparent 3.25rem 6.5rem) 6;
@@ -101,8 +102,15 @@ import { NAV, SERVICES, SITE } from '../core/site.config';
       text-decoration: none;
     }
     .footer__brand img {
-      height: 3rem;
+      height: 4.5rem;
       width: auto;
+    }
+    .footer__name {
+      margin-top: 1.25rem;
+      font-stretch: 74%;
+      font-weight: 780;
+      font-size: var(--step-2);
+      line-height: 1;
     }
     .footer__mark {
       font-stretch: 78%;
@@ -111,8 +119,9 @@ import { NAV, SERVICES, SITE } from '../core/site.config';
       line-height: 1;
     }
     .footer__tagline {
-      margin-top: 0.75rem;
+      margin-top: 0.5rem;
       font-weight: 650;
+      color: var(--red-glow);
     }
     .footer__about .small {
       margin-top: 0.75rem;
@@ -141,7 +150,7 @@ import { NAV, SERVICES, SITE } from '../core/site.config';
     }
     li a:hover {
       text-decoration: underline;
-      text-decoration-color: var(--signal);
+      text-decoration-color: var(--red-glow);
       text-decoration-thickness: 2px;
       text-underline-offset: 0.25em;
     }

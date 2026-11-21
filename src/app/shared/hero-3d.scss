@@ -1,0 +1,346 @@
+:host {
+  position: relative;
+  display: block;
+  background: var(--asphalt);
+  color: var(--paper);
+  isolation: isolate;
+}
+
+/* --- Stage: sticky behind the chapters ----------------------------------- */
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 34rem;
+  overflow: hidden;
+  background: #3b2f36;
+}
+
+.poster,
+.stage__canvas,
+.stage__grade {
+  position: absolute;
+  inset: 0;
+}
+
+/* Dusk sky in the same grade as the 3D scene, so the hand-off is seamless. */
+.poster {
+  background: linear-gradient(
+    180deg,
+    #0a0f1c 0%,
+    #141a30 26%,
+    #1d2440 40%,
+    #5b3d48 50%,
+    #c9683f 56.5%,
+    #3b2f36 58%,
+    #2a2428 100%
+  );
+}
+.poster__sun {
+  position: absolute;
+  left: 38%;
+  top: 56%;
+  width: 46vmax;
+  height: 46vmax;
+  translate: -50% -50%;
+  background: radial-gradient(circle, rgb(255 190 130 / 0.75) 0 1.2%, rgb(255 160 100 / 0.28) 6%, rgb(255 140 90 / 0) 40%);
+}
+.poster__hills {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(57.5% - 9vh);
+  width: 100%;
+  height: 9.5vh;
+  fill: #241f29;
+}
+.poster__hills-near {
+  fill: #1b1820;
+}
+
+/* A carriageway in real CSS perspective: the plane is tilted away from the viewer. */
+.poster__road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 57.5%;
+  bottom: 0;
+  perspective: 30vh;
+  perspective-origin: 38% 0%;
+  overflow: hidden;
+  background: #1c1a17;
+}
+.poster__surface {
+  position: absolute;
+  left: 38%;
+  bottom: -10%;
+  width: 110vh;
+  height: 900%;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  transform: rotateX(84deg);
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent 7%, #e9e7e1 7% 8.4%, transparent 8.4% 91.6%, #e9e7e1 91.6% 93%, transparent 93%),
+    linear-gradient(90deg, #3a3a37 0 7%, #2b2e30 7% 93%, #3a3a37 93%);
+}
+/* Centre line on its own layer, one dash period taller than the road, so it can
+   loop with a transform (compositor only, no repaint). 11 periods over 110%. */
+.poster__surface::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10%;
+  height: 110%;
+  background: linear-gradient(#f6b900 0 40%, transparent 40%) 50% 0 / 1.6% calc(100% / 11) repeat-y;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .poster__surface::before {
+    animation: road-run 0.9s linear infinite;
+  }
+  :host(.is-live) .poster__surface::before {
+    animation: none;
+  }
+}
+@keyframes road-run {
+  to {
+    transform: translateY(calc(100% / 11));
+  }
+}
+
+.stage__canvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.4s var(--ease-out);
+}
+:host(.is-live) .stage__canvas {
+  opacity: 1;
+}
+
+/* Grade: vignette, and a floor of asphalt behind the copy so it always reads. */
+.stage__grade {
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 60% 40%, transparent 55%, rgb(5 7 9 / 0.55) 100%),
+    linear-gradient(0deg, rgb(10 12 14 / 0.92) 0%, rgb(10 12 14 / 0.6) 26%, transparent 52%);
+}
+@media (min-width: 64rem) {
+  .stage__grade {
+    background:
+      radial-gradient(120% 90% at 65% 45%, transparent 55%, rgb(5 7 9 / 0.5) 100%),
+      linear-gradient(90deg, rgb(10 12 14 / 0.86) 0%, rgb(10 12 14 / 0.55) 34%, transparent 58%),
+      linear-gradient(0deg, rgb(10 12 14 / 0.7) 0%, transparent 30%);
+  }
+}
+
+/* --- Chapters -------------------------------------------------------------- */
+.chapters {
+  position: relative;
+  z-index: 1;
+  margin-top: -100svh;
+}
+.chapter {
+  display: flex;
+  align-items: flex-end;
+  min-height: 100svh;
+  padding-block: calc(var(--header-h) + 2rem) clamp(5.5rem, 4rem + 6vh, 8rem);
+}
+.chapter--2,
+.chapter--3 {
+  min-height: 92svh;
+}
+.chapter__body {
+  width: 100%;
+}
+.chapter__body > * {
+  max-width: 40rem;
+}
+.chapter__title {
+  max-width: 14ch;
+  text-shadow: 0 2px 30px rgb(0 0 0 / 0.35);
+}
+.chapter--1 .chapter__title {
+  font-size: var(--step-4);
+  max-width: 13ch;
+}
+h2.chapter__title {
+  margin-top: 1.1rem;
+  font-size: var(--step-4);
+}
+.chapter__lead {
+  margin-top: 1.25rem;
+  max-width: 38ch;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 0.86);
+}
+.btn-row {
+  margin-top: 2rem;
+}
+
+/* The tagline on a highway route plate. */
+.plate {
+  display: inline-flex;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--paper);
+  border-radius: 4px;
+  font-size: var(--step--1);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  overflow: hidden;
+}
+.plate,
+.plate__km {
+  padding: 0.55rem 0.8rem;
+}
+.plate {
+  padding: 0 0.8rem 0 0;
+  align-items: center;
+  gap: 0.8rem;
+}
+.plate__km {
+  background: var(--red);
+  font-stretch: 80%;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.chapter__cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  margin: 1.75rem 0 2rem;
+  font-size: var(--step-1);
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.88);
+}
+.chapter__cities li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.chapter__cities li::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--red-glow);
+}
+
+.chapter__services {
+  margin-top: 2rem;
+  border-top: 1px solid var(--line-on-dark);
+}
+.chapter__services a {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  padding-block: 0.9rem;
+  border-bottom: 1px solid var(--line-on-dark);
+  font-stretch: 78%;
+  font-weight: 750;
+  font-size: var(--step-2);
+  line-height: 1.1;
+  text-decoration: none;
+  transition: padding-left 0.4s var(--ease), color 0.3s;
+}
+.chapter__services a:hover,
+.chapter__services a:focus-visible {
+  padding-left: 0.75rem;
+  color: var(--red-glow);
+}
+.chapter__num {
+  font-size: var(--step--1);
+  font-stretch: 100%;
+  font-weight: 600;
+  color: var(--muted-on-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- HUD --------------------------------------------------------------------- */
+.hud {
+  position: absolute;
+  right: var(--gutter);
+  bottom: clamp(1.5rem, 1rem + 2vh, 2.5rem);
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  pointer-events: none;
+}
+.hud__route {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+.hud__route li {
+  position: relative;
+  width: 2.75rem;
+  padding-top: 0.6rem;
+  color: rgb(255 255 255 / 0.4);
+  transition: color 0.4s;
+}
+.hud__route li::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: rgb(255 255 255 / 0.2);
+}
+.hud__route li::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--marking);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out);
+}
+.hud__route li.is-on {
+  color: var(--paper);
+}
+.hud__route li.is-on::after {
+  transform: none;
+}
+.hud__cue {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .hud {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.25rem;
+  }
+  .hud__cue {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: opacity 0.4s;
+  }
+  .hud__cue::after {
+    content: '';
+    width: 1px;
+    height: 2.75rem;
+    background: linear-gradient(var(--paper), transparent);
+  }
+  .hud__cue.is-hidden {
+    opacity: 0;
+  }
+}
+@media (max-width: 47.99rem) {
+  .hud {
+    display: none;
+  }
+}
